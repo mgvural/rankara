@@ -190,6 +190,7 @@ textarea { min-height: 100px; resize: vertical; }
 .cam { display: grid; grid-template-columns: auto 1fr; gap: 16px; align-items: center; }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
 @media print { body { background: #fff !important; } body * { visibility: hidden !important; } #rpt, #rpt * { visibility: visible !important; } #rpt { position: absolute; left: 0; top: 0; width: 100%; border: 0; box-shadow: none; } #nav, .topbar { display: none !important; } }
+.verbadge{display:inline-block;margin-left:8px;padding:2px 7px;border-radius:999px;background:#E8711A;color:#fff;font-size:12px;font-weight:700;letter-spacing:0;vertical-align:middle;line-height:1.4}
 </style>
 
 <div class="wrap" id="app" aria-live="polite"></div>
@@ -1350,7 +1351,7 @@ function render() {
 }
 function topbar(right = '', sub = 'Poliklinik anamnez ve izlem') {
   const noBack = ['home', 'lock', 'setup', 'loading', 'nodb', 'wiz'].includes(S.view);
-  return `<div class="topbar"><div class="brand">${noBack ? '' : '<button class="btn backbtn" data-a="back" aria-label="Geri">‹ Geri</button><button class="btn backbtn homebtn" data-a="home" aria-label="Ana ekran"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h5v-6h4v6h5V10"/></svg></button>'}<div class="logo" aria-hidden="true">${LOGO}</div><div><h1 class="wordmark">RAN<span>KARA</span></h1><small>${esc(sub)}</small></div></div><div class="row">${right}</div></div>`;
+  return `<div class="topbar"><div class="brand">${noBack ? '' : '<button class="btn backbtn" data-a="back" aria-label="Geri">‹ Geri</button><button class="btn backbtn homebtn" data-a="home" aria-label="Ana ekran"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h5v-6h4v6h5V10"/></svg></button>'}<div class="logo" aria-hidden="true">${LOGO}</div><div><h1 class="wordmark">RAN<span>KARA</span><b class="verbadge">v1.2</b></h1><small>${esc(sub)}</small></div></div><div class="row">${right}</div></div>`;
 }
 const LOGO = `<svg viewBox="0 0 64 64"><rect width="64" height="64" rx="15" fill="#E8711A"/><path d="M32 51 L14.5 33.5 C8.5 27.5 9.5 17.5 17 14.6 C22.6 12.5 28.4 14.6 32 19.6 C35.6 14.6 41.4 12.5 47 14.6 C54.5 17.5 55.5 27.5 49.5 33.5 Z" fill="none" stroke="#FFFFFF" stroke-width="4" stroke-linejoin="round"/><path d="M5 34 H20.5 L24.5 27 L29.5 42.5 L35 18.5 L39.5 34 H59" fill="none" stroke="#E8711A" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 34 H20.5 L24.5 27 L29.5 42.5 L35 18.5 L39.5 34 H59" fill="none" stroke="#13263A" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 const ICONSVG = (c) => `<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${c.icon}</svg>`;
@@ -1673,7 +1674,7 @@ function vForms() {
 /* ---------- AYARLAR ---------- */
 function vSettings() {
   return `${topbar()}<div class="stack">
-    <div class="card stack"><div class="small muted">RANKARA sürüm 1.1 · 20.11.2026</div><h2>Veri güvenliği</h2><p>Kayıtlar ve fotoğraflar bu iPad’de, PIN’inizden türetilen anahtarla <b>AES-256</b> ile şifrelenir (PBKDF2, ${ITER.toLocaleString('tr-TR')} tur). Kayıtlar yalnızca bu iPad’de saklanır; uygulama internete ya da başka bir sisteme veri göndermez, dışarıdan veri almaz. Cihaz dışına çıkabilen tek dosya, sizin aldığınız şifreli yedektir.</p>
+    <div class="card stack"><div class="small muted">RANKARA sürüm 1.2 · 20.11.2026</div><h2>Veri güvenliği</h2><p>Kayıtlar ve fotoğraflar bu iPad’de, PIN’inizden türetilen anahtarla <b>AES-256</b> ile şifrelenir (PBKDF2, ${ITER.toLocaleString('tr-TR')} tur). Kayıtlar yalnızca bu iPad’de saklanır; uygulama internete ya da başka bir sisteme veri göndermez, dışarıdan veri almaz. Cihaz dışına çıkabilen tek dosya, sizin aldığınız şifreli yedektir.</p>
       <p>Ad soyad ve T.C. kimlik numarası tutulmaz. Fotoğraf yalnızca açık rıza işaretlenmiş hastada çekilir. 5 dakika işlem yapılmazsa uygulama kilitlenir.</p><p class="muted small">PIN unutulursa kayıtlar açılamaz. Düzenli yedek alın.</p></div>
     <div class="card stack"><h3>Şifreli yedek</h3><p class="muted small">Yedek dosyası da şifrelidir; yalnızca aynı PIN ile açılır. Kaydederken iCloud Drive’ı değil, <b>iPad’imde</b> klasörünü ya da USB belleği seçin.</p><div class="row"><button class="btn pri" data-a="backup" ${S.dl ? '' : 'disabled'}>Yedek al</button><button class="btn" data-a="restore">Yedekten geri yükle</button></div></div></div>`;
 }
