@@ -199,6 +199,7 @@ textarea { min-height: 100px; resize: vertical; }
 <input id="camInput" type="file" accept="image/*" capture="environment" hidden>
 <input id="labCam" type="file" accept="image/*" capture="environment" hidden>
 <input id="restoreFile" type="file" accept=".json,application/json" hidden>
+<input id="obFile" type="file" accept=".json,application/json,.txt,text/plain" hidden>
 
 <script>
 /* RANKARA çevrimdışı çalışma katmanı: kayıtlar yalnız bu cihazda (IndexedDB) tutulur, hiçbir sunucuya gönderilmez */
@@ -1262,25 +1263,135 @@ const allNos = (p) => Object.values(p.fno || {});
 async function migrateNos() { const list = [...S.pts.values()].sort((a, b) => (a.created || 0) - (b.created || 0)); for (const p of list) { const c = JSON.parse(JSON.stringify(p)); if (await assignNos(c)) await saveP(c); } }
 
 async function loadAll() {
-  const snap = await S.db.collection(`data/users/${S.uid}`).get(); S.pts = new Map(); S.photos = new Map(); S.seq = {}; S.stats = {};
+  const snap = await S.db.collection(`data/users/${S.uid}`).get(); S.pts = new Map(); S.photos = new Map(); S.seq = {}; S.stats = {}; S.obk = null;
   for (const d of snap.docs) {
     try {
       if (d.id.startsWith('p_')) S.pts.set(d.id, await unseal(S.key, d.data()));
       else if (d.id.startsWith('f_')) { const ph = await unseal(S.key, d.data()); S.photos.set(d.id.slice(2), ph.img); }
       else if (d.id === 'seq') S.seq = await unseal(S.key, d.data());
       else if (d.id === 'stats') S.stats = await unseal(S.key, d.data());
+      else if (d.id === 'obkey') S.obk = await unseal(S.key, d.data());
     } catch (e) { /* başka anahtarla şifrelenmiş kayıt atlanır */ }
   }
+  if (!S.obk) { try { await obKeyCreate(); } catch (e) { /* ön anket anahtarı sonra yeniden denenir */ } }
 }
 async function saveP(p) { p.updated = Date.now(); const box = await seal(S.key, p); await S.db.doc(P_(p.id)).set({ ...box, u: p.updated }); S.pts.set(p.id, p); }
 async function savePhoto(pid, img) { const box = await seal(S.key, { img }); await S.db.doc(P_('f_' + pid)).set({ ...box, u: Date.now() }); S.photos.set(pid, img); }
+
+/* ---------- HASTA ÖN ANKETİ (içe aktarma) ----------
+   Hasta, kendi telefonunda onanket.html'i doldurur; cevaplar iPad'in GENEL anahtarıyla şifrelenmiş bir dosya olur.
+   ÖZEL anahtar yalnızca bu iPad'de, PIN anahtarıyla şifreli durur. Genel anahtar herkesçe bilinebildiği için dosyanın
+   kimden geldiği kanıtlanmaz: bu yüzden dosya numarası, doğum yılı ve cinsiyet eşleştirilir, hekim önizleyip onaylar. */
+const b64u = (buf) => b64(buf).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+const OB_BASE = () => (/^https?:/.test(location.href) ? location.href.replace(/[#?].*$/, '').replace(/[^/]*$/, '') : 'https://mgvural.github.io/rankara/');
+const obLink = () => (S.obk ? OB_BASE() + 'onanket.html#k=' + b64u(unb64(S.obk.pub)) : '');
+const isoOf = (t) => { const d = new Date(t); return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10); };
+async function obKeyCreate() {
+  const kp = await crypto.subtle.generateKey({ name: 'ECDH', namedCurve: 'P-256' }, true, ['deriveBits']);
+  const pub = new Uint8Array(await crypto.subtle.exportKey('raw', kp.publicKey)); const priv = await crypto.subtle.exportKey('pkcs8', kp.privateKey);
+  const kid = b64(new Uint8Array(await crypto.subtle.digest('SHA-256', pub)).slice(0, 6));
+  const o = { pub: b64(pub), priv: b64(priv), kid, c: Date.now() };
+  const box = await seal(S.key, o); await S.db.doc(P_('obkey')).set({ ...box, u: Date.now() }); S.obk = o; return o;
+}
+function obParse(text) {
+  const t = String(text || '').trim(); let j; try { j = JSON.parse(t); } catch (e) { throw new Error('fmt'); }
+  if (!j || j.app !== 'RANKARA-ONANKET' || j.v !== 1) throw new Error('fmt');
+  for (const k of ['kid', 'epk', 'salt', 'iv', 'ct']) if (typeof j[k] !== 'string' || !j[k] || j[k].length > 400000) throw new Error('fmt');
+  return j;
+}
+async function obDecrypt(box) {
+  const o = S.obk; if (!o) throw new Error('nokey'); if (box.kid !== o.kid) throw new Error('kid');
+  const priv = await crypto.subtle.importKey('pkcs8', unb64(o.priv), { name: 'ECDH', namedCurve: 'P-256' }, false, ['deriveBits']);
+  const epkRaw = unb64(box.epk); if (epkRaw.length !== 65) throw new Error('fmt');
+  const epk = await crypto.subtle.importKey('raw', epkRaw, { name: 'ECDH', namedCurve: 'P-256' }, false, []);
+  const bits = await crypto.subtle.deriveBits({ name: 'ECDH', public: epk }, priv, 256);
+  const hk = await crypto.subtle.importKey('raw', bits, 'HKDF', false, ['deriveKey']);
+  const aes = await crypto.subtle.deriveKey({ name: 'HKDF', hash: 'SHA-256', salt: unb64(box.salt), info: enc.encode('RANKARA-onanket-v1') }, hk, { name: 'AES-GCM', length: 256 }, false, ['decrypt']);
+  const pt = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: unb64(box.iv), additionalData: enc.encode(o.kid) }, aes, unb64(box.ct));
+  return JSON.parse(dec.decode(pt));
+}
+function obClean(P) {
+  if (!P || P.app !== 'RANKARA-ONANKET' || P.v !== 1 || !P.kim || typeof P.kim !== 'object') throw new Error('fmt');
+  const no = String(P.kim.dosya || ''); const by = Math.round(+P.kim.by); const sex = P.kim.sex === 'K' ? 'K' : P.kim.sex === 'E' ? 'E' : null; const ts = Date.parse(P.ts);
+  if (!/^[A-Z]{2}-\d{4}$/.test(no) || !(by >= 1900 && by <= new Date().getFullYear()) || !sex || !isFinite(ts)) throw new Error('fmt');
+  const cap = (x, n) => String(x == null ? '' : x).slice(0, n); const strs = (a, n) => (Array.isArray(a) ? a : []).slice(0, 60).map((x) => cap(x, n));
+  const lines = (Array.isArray(P.lines) ? P.lines : []).slice(0, 200).map((x) => ({ s: cap(x && x.s, 80), l: cap(x && x.l, 300), v: cap(x && x.v, 1500) }));
+  const a = P.a && typeof P.a === 'object' && !Array.isArray(P.a) ? P.a : {};
+  return { kim: { dosya: no, by, sex }, ts, a, lines, skippedSections: strs(P.skippedSections, 80), skippedQuestions: strs(P.skippedQuestions, 300) };
+}
+/* Ön anketteki yanıtlar formun kendi tanımına göre süzülerek kayda ön doldurulur; ölçüm sayılacak alanlar (boy, kilo) doldurulmaz. */
+const OB_NOPRE = new Set(['boy', 'kilo', 'tarih']);
+function obFlat(ck, fk) { const f = formOf(ck, fk); const out = []; if (!f) return out; for (const st of f.steps) for (const x of st.f.flatMap((y) => (y.t === 'view' ? y.f : [y]))) out.push(x); return out; }
+function obPrefill(p, fk, rec) {
+  const ob = p.ob; if (!ob || ob.used || S.clinic !== 'spor' || !ob.a) return;
+  if (Date.now() - ob.ts > 60 * 86400000) return;
+  const A = ob.a; const keys = []; const seen = new Set();
+  for (const f of obFlat('spor', fk)) {
+    if (!f.k || seen.has(f.k) || OB_NOPRE.has(f.k) || !Object.prototype.hasOwnProperty.call(A, f.k) || rec.d[f.k] != null) continue; seen.add(f.k);
+    const v = A[f.k]; let ok = null;
+    if (f.t === 'single') { if (typeof v === 'string' && f.opts.includes(v)) ok = v; }
+    else if (f.t === 'multi') { const all = f.none ? [f.none, ...f.opts] : f.opts; if (Array.isArray(v) && v.length && v.every((x) => typeof x === 'string' && all.includes(x))) ok = [...new Set(v)]; }
+    else if (f.t === 'num') { if (typeof v === 'number' && isFinite(v) && v >= f.min && v <= f.max) ok = f.dec ? Math.round(v * 10) / 10 : Math.round(v); }
+    else if (f.t === 'yn') { if (v && typeof v === 'object') { const o = {}; for (const [ik] of f.items) if (typeof v[ik] === 'boolean') o[ik] = v[ik]; if (Object.keys(o).length) ok = o; } }
+    else if (f.t === 'likert') { if (v && typeof v === 'object') { const o = {}; for (const [ik] of f.items) if (Number.isInteger(v[ik]) && v[ik] >= 1 && v[ik] <= 7) o[ik] = v[ik]; if (Object.keys(o).length) ok = o; } }
+    if (ok != null) { rec.d[f.k] = ok; keys.push(f.k); }
+  }
+  if (keys.length) rec.oa = { ts: ob.ts, keys };
+}
+function obBox(html) { let h = $('#obBox'); if (!html) { if (h) h.remove(); return; } if (!h) { h = document.createElement('div'); h.id = 'obBox'; h.className = 'confirm'; document.body.appendChild(h); } h.innerHTML = `<div class="card stack" role="dialog" aria-modal="true" style="max-width:640px;max-height:88vh;overflow:auto">${html}</div>`; }
+function obPickHTML(err) {
+  return `<h3>Hasta ön anketini al</h3><p class="muted small" style="margin:0">Hastanın gönderdiği şifreli dosyayı seçin ya da kodu yapıştırın. Dosya yalnızca bu iPad’in anahtarıyla açılır.</p>${err ? `<div class="alert bad">${esc(err)}</div>` : ''}
+    <div class="row"><button class="btn pri" data-a="obfile">Dosya seç</button></div><div class="small muted">ya da şifreli kodu yapıştırın</div><textarea id="obTxt" placeholder="Şifreli kod" style="min-height:90px"></textarea>
+    <div class="row end"><button class="btn" data-a="obclose">Vazgeç</button><button class="btn" data-a="obpaste">Kodu aç</button></div>`;
+}
+const OB_ERR = { fmt: 'Bu bir RANKARA ön anket dosyası değil ya da bozuk.', kid: 'Bu dosya bu iPad’in anahtarıyla şifrelenmemiş. Hasta eski ya da başka bir bağlantıyı kullanmış olabilir.', nokey: 'Bu iPad’de ön anket anahtarı yok. Ayarlar’dan kontrol edin.' };
+async function obProcess(text) {
+  const p = S.pts.get(S.cur); let P;
+  try { P = obClean(await obDecrypt(obParse(text))); } catch (e) { obBox(obPickHTML(OB_ERR[e && e.message] || 'Dosya açılamadı. Bozulmuş ya da değiştirilmiş olabilir.')); return; }
+  const noOk = allNos(p).includes(P.kim.dosya); const other = noOk ? null : [...S.pts.values()].find((q) => allNos(q).includes(P.kim.dosya)) || null;
+  S.obx = { P, noOk, byOk: P.kim.by === p.by, sexOk: P.kim.sex === p.sex, other }; obBox(obPreviewHTML());
+}
+function obPreviewHTML() {
+  const { P, noOk, byOk, sexOk, other } = S.obx; const p = S.pts.get(S.cur); const c = CL[S.clinic]; const g = {}; P.lines.forEach((x) => (g[x.s] = g[x.s] || []).push(x));
+  const sym = P.a.ek1 && ['s5', 's6', 's7', 's10'].some((k) => P.a.ek1[k] === true); const old = Date.now() - P.ts > 60 * 86400000; const need = noOk && (!byOk || !sexOk);
+  return `<h3>Ön anket önizleme</h3>
+    <div class="row between"><div><div class="small muted">Ankette yazılan</div><b>${esc(P.kim.dosya)} · ${P.kim.by} · ${P.kim.sex === 'K' ? 'Kadın' : 'Erkek'}</b></div><div><div class="small muted">Bu hasta</div><b>${esc(fileNo(p, c.k))} · ${p.by} · ${p.sex === 'K' ? 'Kadın' : 'Erkek'}</b></div></div>
+    <div class="small muted">Dolduruldu: ${fmtDate(isoOf(P.ts))}</div>
+    ${!noOk ? `<div class="alert bad">Dosya numarası bu hastayla eşleşmiyor (${esc(P.kim.dosya)}). Yanlış hastaya kayıt eklememek için içe aktarılamaz.</div>${other ? `<div class="row"><button class="btn pri" data-a="obgo" data-v="${other.id}">${esc(P.kim.dosya)} numaralı hastayı aç</button></div>` : ''}` : ''}
+    ${noOk && need ? `<div class="alert warn">${!byOk ? 'Doğum yılı' : ''}${!byOk && !sexOk ? ' ve ' : ''}${!sexOk ? 'cinsiyet' : ''} kayıtla uyuşmuyor. Hastaya yazım hatası olup olmadığını sorun.</div>` : ''}
+    ${old ? '<div class="alert warn">Bu anket 60 günden eski; kayda ön doldurmada kullanılmaz, yalnızca görüntülenir.</div>' : ''}
+    ${p.ob ? '<div class="small muted">Bu hastada daha önce alınmış bir ön anket var; yenisi onun yerine geçer.</div>' : ''}
+    ${sym ? '<div class="alert bad">Eforla ilişkili kalp yakınması bildirilmiş.</div>' : ''}
+    <div class="small muted">Bu cevaplar hastanın kendi beyanıdır. Dosyayı herkes üretebileceği için, hastayla birlikte doğrulayın.</div>
+    <details><summary><b>Cevapları göster (${P.lines.length})</b></summary>${Object.entries(g).map(([sec, ls]) => `<h4 style="margin:12px 0 4px">${esc(sec)}</h4>${ls.map((x) => `<div class="small"><span class="muted">${esc(x.l)}:</span> ${esc(x.v)}</div>`).join('')}`).join('') || '<p class="muted small">Hiçbir bölüm doldurulmamış.</p>'}</details>
+    ${P.skippedSections.length ? `<div class="small"><b>Vizitte konuşulacak bölümler:</b> ${P.skippedSections.map(esc).join(', ')}</div>` : ''}
+    ${noOk && need ? '<label class="row small" style="align-items:center;gap:10px"><input type="checkbox" id="obOk" style="width:26px;height:26px"> Hastayla yüz yüze doğruladım, bu doğru hasta.</label>' : ''}
+    <div class="row end"><button class="btn" data-a="obclose">Vazgeç</button><button class="btn pri" id="obSaveBtn" data-a="obsave" ${noOk && !need ? '' : 'disabled'}>Hastaya ekle</button></div>`;
+}
+async function obSave() {
+  const { P } = S.obx; const p = S.pts.get(S.cur); const copy = JSON.parse(JSON.stringify(p));
+  copy.ob = { ts: P.ts, imp: Date.now(), a: P.a, lines: P.lines, skippedSections: P.skippedSections, skippedQuestions: P.skippedQuestions };
+  try { await saveP(copy); obBox(''); S.obx = null; toast('Ön anket şifrelenerek kaydedildi'); render(); } catch (e) { toast('Kaydedilemedi'); }
+}
+function obCard(p, c) {
+  if (c.k !== 'spor') return '';
+  const ob = p.ob;
+  if (!ob) return `<div class="card stack"><h3>Hasta ön anketi</h3><p class="muted small" style="margin:0">Hastanın telefonda doldurup gönderdiği şifreli anket dosyasını buradan alın.</p><div class="row"><button class="btn" data-a="obopen">Ön anketi al</button></div></div>`;
+  const sym = ob.a && ob.a.ek1 && ['s5', 's6', 's7', 's10'].some((k) => ob.a.ek1[k] === true); const g = {}; ob.lines.forEach((x) => (g[x.s] = g[x.s] || []).push(x));
+  return `<div class="card stack"><div class="row between"><h3 style="margin:0">Hasta ön anketi · ${fmtDate(isoOf(ob.ts))}</h3><span class="pill ${ob.used ? 'ok' : 'neu'}">${ob.used ? 'Kayda aktarıldı' : 'Kayda aktarılmadı'}</span></div>
+    ${sym ? '<div class="alert bad">Eforla ilişkili kalp yakınması bildirilmiş.</div>' : ''}
+    <details><summary><b>Cevapları göster (${ob.lines.length})</b></summary>${Object.entries(g).map(([sec, ls]) => `<h4 style="margin:12px 0 4px">${esc(sec)}</h4>${ls.map((x) => `<div class="small"><span class="muted">${esc(x.l)}:</span> ${esc(x.v)}</div>`).join('')}`).join('') || '<p class="muted small">Hiçbir bölüm doldurulmamış.</p>'}</details>
+    ${ob.skippedSections && ob.skippedSections.length ? `<div class="small"><b>Vizitte konuşulacak bölümler:</b> ${ob.skippedSections.map(esc).join(', ')}</div>` : ''}
+    <div class="small muted">Yeni kayıt açtığınızda bu cevaplar formlara ön doldurulur; hastayla birlikte gözden geçirin.</div>
+    <div class="row"><button class="btn sm" data-a="obopen">Yeni anket al</button><button class="btn sm danger" data-a="obdel">Ön anketi sil</button></div></div>`;
+}
 
 /* otomatik kilit */
 const LOCK_MS = 5 * 60 * 1000; let lockT = null;
 function armLock() { clearTimeout(lockT); if (S.key) lockT = setTimeout(() => lock('Uzun süre işlem yapılmadığı için kilitlendi.'), LOCK_MS); }
 ['pointerdown', 'keydown'].forEach((e) => document.addEventListener(e, armLock, { passive: true }));
 document.addEventListener('visibilitychange', () => { if (document.hidden && S.key) S.hidAt = Date.now(); else if (S.hidAt && S.key && Date.now() - S.hidAt > LOCK_MS) lock('Uzun süre işlem yapılmadığı için kilitlendi.'); });
-function lock(msg) { S.key = null; S.pts = new Map(); S.photos = new Map(); S.cur = null; S.wiz = null; S.pin = ''; S.err = msg || ''; go('lock'); }
+function lock(msg) { S.key = null; S.obk = null; S.obx = null; obBox(''); S.pts = new Map(); S.photos = new Map(); S.cur = null; S.wiz = null; S.pin = ''; S.err = msg || ''; go('lock'); }
 
 async function boot() {
   render();
@@ -1351,7 +1462,7 @@ function render() {
 }
 function topbar(right = '', sub = 'Poliklinik anamnez ve izlem') {
   const noBack = ['home', 'lock', 'setup', 'loading', 'nodb', 'wiz'].includes(S.view);
-  return `<div class="topbar"><div class="brand">${noBack ? '' : '<button class="btn backbtn" data-a="back" aria-label="Geri">‹ Geri</button><button class="btn backbtn homebtn" data-a="home" aria-label="Ana ekran"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h5v-6h4v6h5V10"/></svg></button>'}<div class="logo" aria-hidden="true">${LOGO}</div><div><h1 class="wordmark">RAN<span>KARA</span><b class="verbadge">v1.2</b></h1><small>${esc(sub)}</small></div></div><div class="row">${right}</div></div>`;
+  return `<div class="topbar"><div class="brand">${noBack ? '' : '<button class="btn backbtn" data-a="back" aria-label="Geri">‹ Geri</button><button class="btn backbtn homebtn" data-a="home" aria-label="Ana ekran"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h5v-6h4v6h5V10"/></svg></button>'}<div class="logo" aria-hidden="true">${LOGO}</div><div><h1 class="wordmark">RAN<span>KARA</span><b class="verbadge">v1.3</b></h1><small>${esc(sub)}</small></div></div><div class="row">${right}</div></div>`;
 }
 const LOGO = `<svg viewBox="0 0 64 64"><rect width="64" height="64" rx="15" fill="#E8711A"/><path d="M32 51 L14.5 33.5 C8.5 27.5 9.5 17.5 17 14.6 C22.6 12.5 28.4 14.6 32 19.6 C35.6 14.6 41.4 12.5 47 14.6 C54.5 17.5 55.5 27.5 49.5 33.5 Z" fill="none" stroke="#FFFFFF" stroke-width="4" stroke-linejoin="round"/><path d="M5 34 H20.5 L24.5 27 L29.5 42.5 L35 18.5 L39.5 34 H59" fill="none" stroke="#E8711A" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 34 H20.5 L24.5 27 L29.5 42.5 L35 18.5 L39.5 34 H59" fill="none" stroke="#13263A" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 const ICONSVG = (c) => `<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${c.icon}</svg>`;
@@ -1459,6 +1570,7 @@ function vPatient() {
       ${others.length ? `<div class="row small">Diğer poliklinikler: ${others.map((x) => `<button class="pill neu" data-a="openp" data-v="${p.id}" data-c="${x.k}" style="border:0">${x.ad} · ${esc(fileNo(p, x.k))}</button>`).join(' ')}</div>` : ''}</div></div></div>
     <div class="card stack"><h3>Yeni kayıt</h3><div class="formbtns">${c.forms.map((f) => { const done = f.once && recs.some((r) => r.f === f.k);
       return `<button class="formbtn ${done ? 'done' : ''}" data-a="newrec" data-v="${f.k}" ${done ? 'disabled' : ''}><b>${f.ad}</b><span>${f.tur}${done ? ' · tamamlandı' : ''}</span></button>`; }).join('')}</div></div>
+    ${obCard(p, c)}
     ${(() => { const lr = lastRec(p, c.k); return lr ? alertsHTML(ctxOf(p, c.k, lr)) : ''; })()}
     ${trendsHTML(p)}
     <div class="card"><h3 style="margin-bottom:10px">Kayıtlar</h3><div class="list">${recs.length ? recs.slice().reverse().map((r) => { const f = formOf(c.k, r.f); const ctx = ctxOf(p, c.k, r); const fl = flagsOf(p, c.k, r);
@@ -1597,7 +1709,8 @@ function vWiz() {
   const gate = st.gate ? st.gate(W.rec.d, ctx) : null;
   if (st.segFirst && (W.rec.d.skip || {})[st.seg]) return hdr + `<div class="card stack"><h3>${esc(st.segAd)} bölümü atlandı</h3><p class="muted" style="margin:0">Bu bölüm raporda yer almaz. Devam ederek sonraki bölüme geçebilirsiniz.</p><div class="row"><button class="btn" data-a="segundo" data-v="${st.seg}">Bu bölümü doldur</button></div></div>`;
   const segbar = st.segFirst ? `<div class="segbar"><div><div class="steplabel" style="margin:0">Bölüm</div><b style="font-size:20px">${esc(st.segAd)}</b></div><button class="btn" data-a="segskip" data-v="${st.seg}">Bu bölümü atla</button></div>` : '';
-  return hdr + segbar + viewSummary(st, ctx) + `<div class="card">${st.f.map((fl) => fieldHTML(fl, ctx)).join('')}</div>` + (gate ? `<div class="alert ${gate.l || 'warn'}" style="margin-top:12px">${esc(gate.t)}</div>` : '');
+  const oaN = W.rec.oa && st.f.flatMap((x) => (x.t === 'view' ? x.f : [x])).some((x) => W.rec.oa.keys.includes(x.k)) ? `<div class="alert warn" style="margin-bottom:12px">Bu bölümdeki bazı yanıtlar hastanın ön anketinden dolduruldu (${fmtDate(isoOf(W.rec.oa.ts))}). Hastayla birlikte gözden geçirin, gerekirse düzeltin.</div>` : '';
+  return hdr + segbar + oaN + viewSummary(st, ctx) + `<div class="card">${st.f.map((fl) => fieldHTML(fl, ctx)).join('')}</div>` + (gate ? `<div class="alert ${gate.l || 'warn'}" style="margin-top:12px">${esc(gate.t)}</div>` : '');
 }
 function curFields() { const W = S.wiz; const f = formOf(S.clinic, W.rec.f); const st = f.steps[W.step]; return st ? st.f : []; }
 function fieldByKey(k) { const f = formOf(S.clinic, S.wiz.rec.f); for (const st of f.steps) for (const fl of st.f) { if (fl.k === k) return fl; if (fl.t === 'view') for (const x of fl.f) if (x.k === k) return x; } return null; }
@@ -1674,12 +1787,13 @@ function vForms() {
 /* ---------- AYARLAR ---------- */
 function vSettings() {
   return `${topbar()}<div class="stack">
-    <div class="card stack"><div class="small muted">RANKARA sürüm 1.2 · 20.11.2026</div><h2>Veri güvenliği</h2><p>Kayıtlar ve fotoğraflar bu iPad’de, PIN’inizden türetilen anahtarla <b>AES-256</b> ile şifrelenir (PBKDF2, ${ITER.toLocaleString('tr-TR')} tur). Kayıtlar yalnızca bu iPad’de saklanır; uygulama internete ya da başka bir sisteme veri göndermez, dışarıdan veri almaz. Cihaz dışına çıkabilen tek dosya, sizin aldığınız şifreli yedektir.</p>
+    <div class="card stack"><div class="small muted">RANKARA sürüm 1.3 · 22.11.2026</div><h2>Veri güvenliği</h2><p>Kayıtlar ve fotoğraflar bu iPad’de, PIN’inizden türetilen anahtarla <b>AES-256</b> ile şifrelenir (PBKDF2, ${ITER.toLocaleString('tr-TR')} tur). Kayıtlar yalnızca bu iPad’de saklanır; uygulama internete ya da başka bir sisteme veri göndermez. Dışarıdan alabildiği tek şey hastanın ön anket dosyasıdır; bu dosya yalnızca bu iPad’deki özel anahtarla açılır, hasta eşleştirmesi yapılır ve siz önizleyip onaylamadan kaydedilmez. Cihaz dışına çıkabilen tek dosya, sizin aldığınız şifreli yedektir.</p>
       <p>Ad soyad ve T.C. kimlik numarası tutulmaz. Fotoğraf yalnızca açık rıza işaretlenmiş hastada çekilir. 5 dakika işlem yapılmazsa uygulama kilitlenir.</p><p class="muted small">PIN unutulursa kayıtlar açılamaz. Düzenli yedek alın.</p></div>
-    <div class="card stack"><h3>Şifreli yedek</h3><p class="muted small">Yedek dosyası da şifrelidir; yalnızca aynı PIN ile açılır. Kaydederken iCloud Drive’ı değil, <b>iPad’imde</b> klasörünü ya da USB belleği seçin.</p><div class="row"><button class="btn pri" data-a="backup" ${S.dl ? '' : 'disabled'}>Yedek al</button><button class="btn" data-a="restore">Yedekten geri yükle</button></div></div></div>`;
+    <div class="card stack"><h3>Şifreli yedek</h3><p class="muted small">Yedek dosyası da şifrelidir; yalnızca aynı PIN ile açılır. Kaydederken iCloud Drive’ı değil, <b>iPad’imde</b> klasörünü ya da USB belleği seçin.</p><div class="row"><button class="btn pri" data-a="backup" ${S.dl ? '' : 'disabled'}>Yedek al</button><button class="btn" data-a="restore">Yedekten geri yükle</button></div></div>
+    <div class="card stack"><h3>Hasta ön anketi bağlantısı</h3>${S.obk ? `<p class="muted small" style="margin:0">Spor kardiyolojisi hastalarına gönderin. Hasta anketi telefonda doldurur, cevaplar şifreli bir dosya olur ve siz hasta sayfasından “Ön anketi al” ile içe aktarırsınız. Cevaplar hiçbir sunucuya gitmez. Bağlantıdaki parça yalnızca şifreleme için genel anahtardır; kendi başına hiçbir şeyi açmaz.</p><div style="font-family:ui-monospace,Menlo,monospace;font-size:12px;word-break:break-all;background:var(--surface2,#eef2f6);border-radius:10px;padding:10px">${esc(obLink())}</div><div class="row"><button class="btn pri" data-a="oblink">Bağlantıyı kopyala</button><button class="btn" data-a="obshare">Paylaş</button></div><div class="small muted">Anahtar kimliği: ${esc(S.obk.kid)}. Bağlantıyı yalnızca randevu verdiğiniz hastalara iletin; dosya numarası hasta tarafından girilir.</div>` : '<p class="muted small" style="margin:0">Anahtar henüz oluşturulamadı. Kilitleyip yeniden açın.</p>'}</div></div>`;
 }
 async function doBackup() {
-  const snap = await S.db.collection(`data/users/${S.uid}`).get(); const docs = snap.docs.filter((d) => /^(p_|f_|seq$|stats$)/.test(d.id)).map((d) => ({ id: d.id, ...d.data() }));
+  const snap = await S.db.collection(`data/users/${S.uid}`).get(); const docs = snap.docs.filter((d) => /^(p_|f_|seq$|stats$|obkey$)/.test(d.id)).map((d) => ({ id: d.id, ...d.data() }));
   try { await S.dl.save({ filename: `RANKARA-yedek-${todayISO()}.json`, data: JSON.stringify({ app: 'RANKARA', v: 1, created: new Date().toISOString(), meta: S.meta, docs }) }); toast('Yedek kaydedildi'); } catch (e) { toast('Yedek kaydedilmedi'); }
 }
 async function doRestore(file) {
@@ -1687,7 +1801,7 @@ async function doRestore(file) {
     const j = JSON.parse(await file.text()); if (!['RANKARA', 'RANKARA', 'MGV'].includes(j.app) || !j.meta || !Array.isArray(j.docs)) throw new Error('bad');
     const fromSetup = S.view === 'setup';
     if (fromSetup) { await S.db.doc(P_('vault')).set(j.meta); S.meta = j.meta; } else if (j.meta.salt !== S.meta.salt) { toast('Bu yedek farklı bir PIN ile oluşturulmuş'); return; }
-    for (const x of j.docs) { const { id, ...box } = x; if (/^(p_|f_|seq$|stats$)/.test(id)) await S.db.doc(P_(id)).set(box); }
+    for (const x of j.docs) { const { id, ...box } = x; if (/^(p_|f_|seq$|stats$|obkey$)/.test(id)) await S.db.doc(P_(id)).set(box); }
     if (fromSetup) { toast('Yedek yüklendi; yedeğin PIN’iyle açın'); go('lock'); } else { await loadAll(); try { await migrateNos(); } catch (e) { } toast('Yedek geri yüklendi'); go('home'); }
   } catch (e) { toast('Yedek dosyası okunamadı'); }
 }
@@ -1734,6 +1848,7 @@ async function pinOk() {
       if (S.pin !== S.pin1) { S.err = 'PIN\'ler aynı değil, baştan girin.'; S.pin1 = null; S.pin = ''; S.busy = false; render(); return; }
       const salt = b64(crypto.getRandomValues(new Uint8Array(16))); S.key = await deriveKey(S.pin, salt, ITER);
       S.meta = { salt, iter: ITER, check: await seal(S.key, { ok: 'SPORIUM', created: Date.now() }), v: 1 }; await S.db.doc(P_('vault')).set(S.meta);
+      try { await obKeyCreate(); } catch (e) { /* anahtar sonraki açılışta yeniden denenir */ }
       S.pin = ''; S.pin1 = null; S.busy = false; armLock(); go('home'); toast('PIN kaydedildi');
     } else {
       const key = await deriveKey(S.pin, S.meta.salt, S.meta.iter || ITER);
@@ -1747,6 +1862,7 @@ async function wizSave() {
   const p = S.pts.get(S.cur); const ck = S.clinic; const rec = JSON.parse(JSON.stringify(S.wiz.rec));
   const copy = JSON.parse(JSON.stringify(p)); copy.mod = copy.mod || {}; copy.mod[ck] = copy.mod[ck] || { recs: [] };
   copy.mod[ck].recs = [...copy.mod[ck].recs.filter((r) => r.id !== rec.id), rec];
+  if (rec.oa && copy.ob && !copy.ob.used) copy.ob = { ...copy.ob, used: rec.id };
   try { await saveP(copy); S.wiz.saved = true; toast('Kayıt şifrelenerek kaydedildi'); render(); checkMilestones(); return true; } catch (e) { toast('Kaydedilemedi, bağlantıyı kontrol edin'); return false; }
 }
 document.addEventListener('click', async (e) => {
@@ -1817,7 +1933,7 @@ document.addEventListener('click', async (e) => {
       const p = JSON.parse(JSON.stringify(S.pts.get(S.cur))); p.clinics = (p.clinics || []).filter((x) => x !== S.clinic); if (p.mod) delete p.mod[S.clinic];
       if (!p.clinics.length) { await S.db.doc(P_(p.id)).delete(); await S.db.doc(P_('f_' + p.id)).delete(); S.pts.delete(p.id); S.photos.delete(p.id); } else await saveP(p);
       toast('Hasta çıkarıldı'); go('clinic'); }); break;
-    case 'newrec': { const rec = { id: 'r_' + rnd(6), f: v, c: Date.now(), d: { tarih: todayISO() } }; const prev = allRecsOf(S.pts.get(S.cur)).filter((r) => r.d.kilac).slice(-1)[0]; if (prev && formOf(S.clinic, v).steps.some((st) => st.f.some((x) => x.k === 'kilac'))) rec.d.kilac = [...prev.d.kilac]; openWizard(rec); break; }
+    case 'newrec': { const rec = { id: 'r_' + rnd(6), f: v, c: Date.now(), d: { tarih: todayISO() } }; const prev = allRecsOf(S.pts.get(S.cur)).filter((r) => r.d.kilac).slice(-1)[0]; if (prev && formOf(S.clinic, v).steps.some((st) => st.f.some((x) => x.k === 'kilac'))) rec.d.kilac = [...prev.d.kilac]; if (S.clinic === 'spor') obPrefill(S.pts.get(S.cur), v, rec); openWizard(rec); break; }
     case 'openrec': S.rv = v; go('report'); break;
     case 'trend': S.tk = v; go('trend'); break;
     case 'backp': go('patient'); break;
@@ -1853,6 +1969,15 @@ document.addEventListener('click', async (e) => {
       window.scrollTo(0, 0); render(); break; }
     case 'wizcancel': confirmBox('Kaydedilmemiş bilgiler silinecek. Çıkılsın mı?', 'Çık', async () => { S.wiz = null; go('patient'); }); break;
     case 'wizsave': await wizSave(); break;
+    case 'obopen': S.obx = null; obBox(obPickHTML()); break;
+    case 'obfile': $('#obFile').click(); break;
+    case 'obpaste': { const t = ($('#obTxt') || {}).value || ''; if (!t.trim()) { toast('Önce kodu yapıştırın'); break; } await obProcess(t); break; }
+    case 'obclose': S.obx = null; obBox(''); break;
+    case 'obsave': await obSave(); break;
+    case 'obgo': obBox(''); S.obx = null; S.cur = v; go('patient'); break;
+    case 'obdel': confirmBox('Hastanın ön anketi silinsin mi? Kayda aktarılmış yanıtlar etkilenmez.', 'Sil', async () => { const p = S.pts.get(S.cur); const copy = JSON.parse(JSON.stringify(p)); delete copy.ob; try { await saveP(copy); toast('Ön anket silindi'); render(); } catch (e) { toast('Silinemedi'); } }); break;
+    case 'oblink': try { await navigator.clipboard.writeText(obLink()); toast('Bağlantı kopyalandı'); } catch (e) { toast('Kopyalanamadı; bağlantıyı ekrandan seçip kopyalayın'); } break;
+    case 'obshare': try { await navigator.share({ url: obLink(), title: 'RANKARA ön anket' }); } catch (e) { if (!e || e.name !== 'AbortError') toast('Paylaşılamadı; “Bağlantıyı kopyala”yı kullanın'); } break;
     case 'wizdone': if (!S.wiz.saved) { const ok = await wizSave(); if (!ok) return; } S.wiz = null; go('patient'); break;
     case 'pdf': await makePDF(); break;
   }
@@ -1863,6 +1988,8 @@ document.addEventListener('change', async (e) => {
   if (e.target.id === 'camInput' && e.target.files[0]) await handlePhoto(e.target.files[0]);
   if (e.target.id === 'labCam' && e.target.files[0]) { const f = e.target.files[0]; e.target.value = ''; await runLabOCR(f); }
   if (e.target.id === 'restoreFile' && e.target.files[0]) await doRestore(e.target.files[0]);
+  if (e.target.id === 'obFile' && e.target.files[0]) { const f = e.target.files[0]; e.target.value = ''; if (f.size > 600000) { obBox(obPickHTML('Dosya çok büyük; bir ön anket dosyası değil.')); } else await obProcess(await f.text()); }
+  if (e.target.id === 'obOk') { const b = $('#obSaveBtn'); if (b) b.disabled = !e.target.checked; }
 });
 
 boot();

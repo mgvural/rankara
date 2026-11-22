@@ -1,0 +1,414 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#E8711A">
+<link rel="icon" type="image/png" href="icon-192.png">
+<title>Spor Kardiyolojisi Ön Değerlendirme Anketi</title>
+<style>
+:root { --bg:#F2F5F8; --surface:#fff; --surface2:#E9EFF5; --ink:#13263A; --muted:#5A6D80; --line:#D3DDE7; --pri:#1F4E79; --org:#E8711A; --ok:#1E8E4F; --okbg:#E3F3EA; --warn:#B86E00; --warnbg:#FFF1DA; --bad:#C0392B; --badbg:#FBE6E3; --rk:#FFE6CF; }
+* { box-sizing: border-box; }
+html, body { margin:0; }
+body { background:var(--bg); color:var(--ink); font-family:-apple-system,"Segoe UI",Roboto,Arial,sans-serif; font-size:18px; line-height:1.45; -webkit-tap-highlight-color:transparent; }
+.wrap { max-width:720px; margin:0 auto; padding:16px 16px 120px; }
+.top { display:flex; align-items:center; gap:12px; margin-bottom:14px; }
+.top svg { width:44px; height:44px; flex:none; }
+.top b { display:block; font-size:17px; letter-spacing:.02em; }
+.top small { color:var(--muted); font-size:14px; }
+h1 { font-size:24px; margin:4px 0 10px; line-height:1.25; }
+h2 { font-size:21px; margin:0 0 8px; line-height:1.25; }
+h3 { font-size:18px; margin:0 0 6px; }
+p { margin:0 0 10px; }
+.muted { color:var(--muted); } .small { font-size:15px; }
+.card { background:var(--surface); border:1px solid var(--line); border-radius:16px; padding:16px; margin-bottom:14px; box-shadow:0 1px 2px rgba(19,38,58,.06); }
+.card.purpose { border-left:6px solid var(--org); }
+.bar { height:8px; background:var(--surface2); border-radius:8px; overflow:hidden; margin:0 0 14px; }
+.bar i { display:block; height:100%; background:var(--org); transition:width .25s; }
+.steplabel { font-size:14px; color:var(--muted); margin-bottom:6px; }
+.q { margin:0 0 20px; }
+.ql { font-weight:600; margin:0 0 8px; }
+.help { color:var(--muted); font-size:15px; margin:-4px 0 8px; }
+.chips { display:flex; flex-wrap:wrap; gap:8px; }
+.chip { min-height:52px; padding:8px 16px; border-radius:14px; border:2px solid var(--line); background:var(--surface); font:inherit; font-weight:600; font-size:17px; color:var(--ink); cursor:pointer; text-align:center; }
+.chip[aria-pressed="true"] { background:var(--pri); border-color:var(--pri); color:#fff; }
+.chip.atla { font-weight:500; color:var(--muted); border-style:dashed; }
+.chip.atla[aria-pressed="true"] { background:var(--surface2); color:var(--ink); border-color:var(--muted); }
+.yn { display:grid; gap:10px; }
+.yn .it { border:1px solid var(--line); border-radius:12px; padding:10px 12px; }
+.yn .it .t { margin:0 0 8px; }
+.lk { display:grid; gap:12px; }
+.lk .it .t { margin:0 0 4px; font-weight:600; }
+.lk .ends { display:flex; justify-content:space-between; font-size:13px; color:var(--muted); margin-top:3px; }
+.lk .row7 { display:grid; grid-template-columns:repeat(7,1fr); gap:6px; }
+.lk .row7 .chip { min-width:0; padding:6px 0; min-height:48px; }
+input[type=text], input[type=number], select, textarea { width:100%; font:inherit; font-size:18px; padding:12px 14px; border:2px solid var(--line); border-radius:12px; background:var(--surface); color:var(--ink); }
+textarea { min-height:84px; resize:vertical; }
+.num { display:flex; align-items:center; gap:10px; } .num input { max-width:160px; }
+.btn { min-height:56px; padding:0 22px; border-radius:14px; border:2px solid var(--line); background:var(--surface); font:inherit; font-weight:700; font-size:18px; color:var(--ink); cursor:pointer; }
+.btn.pri { background:var(--pri); border-color:var(--pri); color:#fff; }
+.btn.org { background:var(--org); border-color:var(--org); color:#fff; }
+.btn.sm { min-height:44px; font-size:16px; padding:0 14px; }
+.btn:disabled { opacity:.4; cursor:default; }
+.nav { position:fixed; left:0; right:0; bottom:0; background:rgba(255,255,255,.96); border-top:1px solid var(--line); padding:10px 16px calc(10px + env(safe-area-inset-bottom)); }
+.nav .in { max-width:720px; margin:0 auto; display:flex; gap:10px; justify-content:space-between; }
+.nav .btn { flex:1; }
+.alert { border-radius:12px; padding:12px 14px; margin:0 0 14px; font-size:16px; }
+.alert.warn { background:var(--warnbg); color:#6B4100; } .alert.bad { background:var(--badbg); color:#7A1F14; } .alert.ok { background:var(--okbg); color:#14502D; }
+.check { display:flex; gap:12px; align-items:flex-start; padding:10px 0; }
+.check input { width:28px; height:28px; flex:none; margin-top:2px; accent-color:var(--pri); }
+ul.tick { margin:0 0 10px; padding-left:22px; } ul.tick li { margin-bottom:6px; }
+dl { margin:0; } dt { font-weight:600; font-size:15px; color:var(--muted); margin-top:8px; } dd { margin:0 0 2px; }
+.sec { border-top:1px solid var(--line); padding-top:10px; margin-top:12px; }
+.code { font-family:ui-monospace,Menlo,monospace; font-size:13px; word-break:break-all; background:var(--surface2); border-radius:10px; padding:10px; max-height:110px; overflow:auto; }
+.row { display:flex; gap:10px; flex-wrap:wrap; }
+@media print { .nav, .top { display:none; } body { background:#fff; } }
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+<div class="nav" id="nav" hidden><div class="in" id="navin"></div></div>
+<script>
+'use strict';
+/* =====================================================================
+   RANKARA ön değerlendirme anketi (hasta tarafı)
+   Cevaplar yalnızca bu telefonda işlenir. Hiçbir sunucuya gönderilmez.
+   Sonunda kliniğin genel anahtarıyla şifrelenmiş bir dosya üretilir;
+   dosyayı yalnızca kliniğin iPad'indeki özel anahtar açabilir.
+   ===================================================================== */
+const CLINIC = {
+  ad: 'Atatürk Sanatoryum Eğitim ve Araştırma Hastanesi',
+  pol: 'Spor Kardiyolojisi Polikliniği',
+  /* Aşağıdakiler boşsa ekranda gösterilmez; kliniğe göre doldurulur. */
+  adres: '', ulasim: '', tel: '', eposta: '', randevuNot: '', kvkkIletisim: '', hazirlik: ''
+};
+const VERSION = '1';
+
+const SPORTS = ['Koşu', 'Bisiklet', 'Triatlon', 'Yüzme', 'Fitness / ağırlık', 'Crossfit', 'Futbol', 'Basketbol / voleybol', 'Raket sporları', 'Dağcılık / doğa', 'Dövüş sporları', 'Diğer'];
+const ENDURANCE = new Set(['Koşu', 'Bisiklet', 'Triatlon', 'Yüzme']);
+const WELL = [['uyku', 'Uyku kalitesi', 'çok iyi', 'çok kötü'], ['yorg', 'Yorgunluk', 'hiç yok', 'çok yorgun'], ['stres', 'Stres', 'çok rahat', 'çok stresli'], ['agri', 'Kas ağrısı', 'hiç yok', 'çok fazla'], ['ruh', 'Ruh hali', 'çok iyi', 'çok kötü']];
+const NEG = 'Yanıtlamak istemiyorum';
+const FAM_HER = ['HKMP', 'DKMP', 'ARVK', 'Uzun QT / Brugada / KPVT', 'Marfan / aortopati'];
+
+/* t: single | multi | yn | likert | num | text ; o: seçenekler ; none: "hiçbiri" seçeneği ; neg: açık "yanıtlamak istemiyorum" düğmesi */
+const SECTIONS = [
+  { id: 'spor', ad: 'Spor öykünüz', ne: 'Ne kadar ve hangi sporu yaptığınızı bilmek, muayene ve EKG/eko sonuçlarını doğru yorumlamamızı sağlar.', q: [
+    { t: 'single', k: 'spor', l: 'Birincil spor dalınız', o: SPORTS },
+    { t: 'multi', k: 'spordiger', l: 'Yaptığınız diğer spor dalları', o: SPORTS, none: 'Yok' },
+    { t: 'single', k: 'duzey', l: 'Spor düzeyiniz', o: ['Rekreasyonel', 'Amatör yarışmacı', 'Profesyonel / milli'], help: 'Rekreasyonel: sağlık ve keyif için, yarışma amacı olmadan.' },
+    { t: 'single', k: 'lisansvar', l: 'Lisansınız var mı?', o: ['Lisans yok', 'Lisansım var', 'Bilmiyorum'] },
+    { t: 'num', k: 'yil', l: 'Kaç yıldır düzenli spor yapıyorsunuz?', unit: 'yıl', min: 0, max: 60 },
+    { t: 'single', k: 'yaris', l: 'Yarışmalara katılıyor musunuz?', o: ['Yok', 'Yerel', 'Ulusal', 'Uluslararası'] }
+  ] },
+  { id: 'yuk', ad: 'Antrenman yükünüz', ne: 'Son 4 haftadaki olağan haftanızı düşünerek cevaplayın. Yük artışı ya da ani değişiklik kalp açısından önemlidir.', q: [
+    { t: 'single', k: 'gun', l: 'Haftada kaç gün antrenman yapıyorsunuz?', o: ['0', '1', '2', '3', '4', '5', '6', '7'] },
+    { t: 'single', k: 'sure', l: 'Bir antrenman ortalama kaç dakika sürüyor?', o: ['20', '30', '45', '60', '75', '90', '120', '150', '180'] },
+    { t: 'single', k: 'rpe', l: 'Antrenmanlarınız ortalama ne kadar zor? (0 dinlenme, 5 zor, 10 en zor)', o: ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10'] },
+    { t: 'num', k: 'km', l: 'Haftalık toplam mesafe (koşu, bisiklet, yüzme, triatlonda)', unit: 'km', min: 0, max: 500, when: (a) => sportsOf(a).some((x) => ENDURANCE.has(x)) },
+    { t: 'single', k: 'sezon', l: 'Şu an hangi dönemdesiniz?', o: ['Hazırlık', 'Yarışma sezonu', 'Geçiş / dinlenme', 'Belirli bir dönem yok'] },
+    { t: 'single', k: 'degisim', l: 'Son 12 haftada antrenman yükünüz nasıl değişti?', o: ['Belirgin arttı', 'Biraz arttı', 'Değişmedi', 'Azaldı'] },
+    { t: 'single', k: 'ara', l: 'Son 3 ayda hastalık, ateş ya da sakatlık yüzünden antrenmana ara verdiniz mi?', o: ['Hayır', 'Evet, 1 haftadan kısa', 'Evet, 1 hafta ya da daha uzun'] }
+  ] },
+  { id: 'kalp', ad: 'Kalple ilgili yakınmalar', ne: 'Bu bölüm, spor sırasında kalp kaynaklı bir sorun olup olmadığını anlamak için en önemli bölümdür.', uyari: 'Egzersiz sırasında bayılma, göğüs ağrısı ya da şiddetli çarpıntı şu anda da sürüyorsa randevuyu beklemeyin; en yakın acile başvurun ya da 112’yi arayın.', q: [
+    { t: 'yn', k: 'ek1', l: 'Aşağıdakilerden hangileri sizde oldu?', items: [
+      ['s5', 'Egzersiz sırasında ya da hemen sonrasında bayıldınız ya da bayılacak gibi oldunuz'],
+      ['s6', 'Egzersiz sırasında göğsünüzde ağrı, sıkışma ya da baskı hissettiniz'],
+      ['s7', 'Egzersiz sırasında kalbinizin hızlı, düzensiz ya da çok güçlü attığını hissettiniz'],
+      ['s10', 'Egzersizde, benzer düzeydeki kişilere göre alışılmadık nefes darlığı ya da baş dönmesi yaşıyorsunuz'],
+      ['s8', 'Bir doktor size kalbinizle ilgili bir sorununuz olduğunu söyledi'],
+      ['s9', 'Bir doktor daha önce kalbiniz için bir tetkik istedi (EKG, kalp ultrasonu, efor testi gibi)']] },
+    { t: 'yn', k: 'ek', l: 'Bunlar da sizde oldu mu?', items: [
+      ['uf', 'Bir doktor kalbinizde üfürüm olduğunu söyledi'],
+      ['ht', 'Bir doktor yüksek tansiyonunuz olduğunu söyledi'],
+      ['kisit', 'Bir doktor spor yapmanızı sınırladı ya da yasakladı'],
+      ['perf', 'Son dönemde antrenmanda alışılmadık yorgunluk ya da performans düşüşü yaşıyorsunuz']] },
+    { t: 'text', k: 'kalpnot', l: 'Evet dediyseniz kısaca anlatın (ne zaman, ne kadar sürdü, hâlâ oluyor mu?)' }
+  ] },
+  { id: 'oz', ad: 'Özgeçmiş ve aile öyküsü', ne: 'Geçmiş hastalıklarınız ve ailenizdeki kalp hastalıkları, risk değerlendirmesinin temelidir.', q: [
+    { t: 'multi', k: 'oz', l: 'Sizde hiç oldu mu ya da var mı?', o: ['Kalp hastalığı', 'Miyokardit / viral enfeksiyon', 'Hipertansiyon', 'Diyabet', 'Kronik böbrek hastalığı', 'Astım', 'Tiroid hastalığı', 'Kalp girişimi / cerrahi'], none: 'Yok', help: 'Miyokardit: kalp kasının virüs gibi bir nedenle iltihaplanması.' },
+    { t: 'single', k: 'nikotin', l: 'Sigara / nikotin', o: ['Hiç', 'Bırakmış', 'Sigara', 'Elektronik sigara', 'Nargile'] },
+    { t: 'multi', k: 'aile', l: 'Ailenizde (anne, baba, kardeş, çocuk, amca, hala, dayı, teyze, büyükanne ve büyükbaba) şunlardan biri oldu mu?', o: ['<35 yaş ani ölüm', 'HKMP', 'DKMP', 'ARVK', 'Uzun QT / Brugada / KPVT', 'Marfan / aortopati', 'Erken koroner hastalık', '<35 yaş pil / ICD'], none: 'Yok', extra: 'Bilmiyorum',
+      help: '35 yaşından önce ani ve beklenmedik ölüm; HKMP: kalın kalp kası hastalığı; DKMP: genişlemiş kalp kası hastalığı; ARVK: sağ karıncık kas hastalığı; Uzun QT / Brugada / KPVT: kalıtsal ritim hastalıkları; Marfan / aortopati: ana damar genişlemesi; Erken koroner hastalık: erkekte 55, kadında 65 yaşından önce kalp krizi ya da damar hastalığı.' }
+  ] },
+  { id: 'ilac', ad: 'İlaçlar ve takviyeler', ne: 'Bazı ilaç ve takviyeler kalp ritmini, tansiyonu ve EKG’yi etkiler. Cevabınız yalnızca kalp güvenliğiniz için kullanılır.', q: [
+    { t: 'multi', k: 'ilacsin', l: 'Düzenli ya da sık kullandığınız ilaçlar', o: ['Tansiyon ilacı', 'Kolesterol ilacı', 'Astım / alerji ilacı ya da spreyi', 'Dikkat eksikliği (DEHB) ilacı', 'Ağrı kesici / iltihap giderici (reçetesiz dahil)', 'Burun açıcı / grip ilacı', 'Hormon / doğum kontrol', 'Antidepresan / uyku ilacı', 'Kan sulandırıcı', 'Diğer'], none: 'Hiçbiri', neg: true },
+    { t: 'text', k: 'ilacnot', l: 'İlaç adlarını bilirseniz yazın (isteğe bağlı)' },
+    { t: 'multi', k: 'takviye', l: 'Takviyeler', o: ['Protein', 'Kreatin', 'Vitamin / mineral', 'Kilo verme ürünü', 'Kafein / pre-workout'], none: 'Kullanmıyor', neg: true },
+    { t: 'single', k: 'caf', l: 'Günde kaç fincan kahve ya da çay içiyorsunuz?', o: ['0', '1', '2', '3', '4', '5', '6+'] },
+    { t: 'single', k: 'enerji', l: 'Enerji içeceği', o: ['Hiç', 'Haftada 1–3', 'Hemen her gün'] },
+    { t: 'single', k: 'alkol', l: 'Alkol', o: ['Hiç', 'Ayda birkaç kez', 'Haftada 1–2', 'Haftada 3 ve üzeri'], neg: true },
+    { t: 'single', k: 'ped', l: 'Performans artırıcı madde (anabolik steroid, büyüme hormonu, uyarıcı gibi) kullandınız mı?', o: ['Hayır', 'Evet'], neg: true,
+      help: 'Bu bilgi yalnızca kalp güvenliğiniz içindir. Siz yazılı izin vermedikçe kulübünüzle, antrenörünüzle ya da federasyonla paylaşılmaz.' }
+  ] },
+  { id: 'diyet', ad: 'Beslenme', ne: 'Yetersiz enerji alımı kalp ritmini ve kemik sağlığını etkileyebilir; beslenme alışkanlıklarınızı bilmek değerlendirmeye yardımcı olur.', q: [
+    { t: 'single', k: 'diyet', l: 'Beslenme düzeniniz', o: ['Karma, kısıtlama yok', 'Vejetaryen', 'Vegan', 'Düşük karbonhidrat / ketojenik', 'Aralıklı oruç', 'Diğer'] },
+    { t: 'single', k: 'ogun', l: 'Günde kaç öğün yiyorsunuz?', o: ['1–2', '3', '4', '5 ve üzeri'] },
+    { t: 'single', k: 'kisitla', l: 'Kilo ya da performans için bilerek yemeyi kısıtladığınız dönemler oluyor mu?', o: ['Hayır', 'Bazen', 'Sık sık'], neg: true },
+    { t: 'single', k: 'kilodeg', l: 'Son 3 ayda kilonuz değişti mi?', o: ['Değişmedi (±2 kg)', '3 kg ve üzeri verdim', '3 kg ve üzeri aldım'] },
+    { t: 'num', k: 'boy', l: 'Boyunuz', unit: 'cm', min: 120, max: 230 },
+    { t: 'num', k: 'kilo', l: 'Kilonuz', unit: 'kg', min: 30, max: 220, dec: true }
+  ] },
+  { id: 'iyilik', ad: 'Uyku ve iyilik hali', ne: 'Son bir haftada nasıl hissettiğinizi bilmek istiyoruz. Bu kısım tanı koymaz.', uyari: 'Kendinizi çok kötü hissediyor ve güvende olmadığınızı düşünüyorsanız randevuyu beklemeyin; 112’yi arayın.', q: [
+    { t: 'likert', k: 'well', l: 'Son 7 gün (1 en iyi, 7 en kötü)', items: WELL },
+    { t: 'single', k: 'uykus', l: 'Gece ortalama kaç saat uyuyorsunuz?', o: ['<6 saat', '6–7 saat', '7–9 saat', '>9 saat'] },
+    { t: 'single', k: 'destek', l: 'Son zamanlarda zorlandığınız ve biriyle konuşmak isteyeceğiniz bir konu var mı?', o: ['Evet', 'Hayır'], neg: true }
+  ] }
+];
+const SECID = Object.fromEntries(SECTIONS.map((s) => [s.id, s]));
+const FLOW = ['intro', 'kim', ...SECTIONS.map((s) => s.id), 'review', 'out'];
+
+function sportsOf(a) { return [a.spor, ...((Array.isArray(a.spordiger) ? a.spordiger : []).filter((x) => x !== 'Yok'))].filter(Boolean); }
+
+/* ------------------------------ durum ------------------------------ */
+const store = { get() { try { return JSON.parse(sessionStorage.getItem('rk_on') || 'null'); } catch (e) { return null; } }, set(o) { try { sessionStorage.setItem('rk_on', JSON.stringify(o)); } catch (e) { } }, clear() { try { sessionStorage.removeItem('rk_on'); } catch (e) { } } };
+let S = store.get() || { step: 0, ans: {}, pick: {}, consent: false, kim: { dosya: '', by: '', sex: '' } };
+let OUT = null; /* üretilen şifreli dosya bilgisi */
+let KEY = null; /* kliniğin genel anahtarı */
+const $ = (s) => document.querySelector(s);
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const save = () => store.set(S);
+
+const b64 = (buf) => { const u = new Uint8Array(buf); let s = ''; for (let i = 0; i < u.length; i += 0x8000) s += String.fromCharCode.apply(null, u.subarray(i, i + 0x8000)); return btoa(s); };
+const unb64 = (s) => Uint8Array.from(atob(s), (c) => c.charCodeAt(0));
+const unb64url = (s) => unb64(s.replace(/-/g, '+').replace(/_/g, '/') + '==='.slice((s.length + 3) % 4));
+const enc = new TextEncoder();
+
+/* ------------------------------ şifreleme ------------------------------ */
+async function loadClinicKey() {
+  const m = /[#&]k=([A-Za-z0-9_-]+)/.exec(location.hash || '');
+  if (!m) return null;
+  try {
+    const raw = unb64url(m[1]); if (raw.length !== 65 || raw[0] !== 4) return null;
+    const pub = await crypto.subtle.importKey('raw', raw, { name: 'ECDH', namedCurve: 'P-256' }, false, []);
+    const kid = b64(new Uint8Array(await crypto.subtle.digest('SHA-256', raw)).slice(0, 6));
+    return { pub, kid };
+  } catch (e) { return null; }
+}
+async function sealFor(key, obj) {
+  const eph = await crypto.subtle.generateKey({ name: 'ECDH', namedCurve: 'P-256' }, true, ['deriveBits']);
+  const bits = await crypto.subtle.deriveBits({ name: 'ECDH', public: key.pub }, eph.privateKey, 256);
+  const hk = await crypto.subtle.importKey('raw', bits, 'HKDF', false, ['deriveKey']);
+  const salt = crypto.getRandomValues(new Uint8Array(16)), iv = crypto.getRandomValues(new Uint8Array(12));
+  const aes = await crypto.subtle.deriveKey({ name: 'HKDF', hash: 'SHA-256', salt, info: enc.encode('RANKARA-onanket-v1') }, hk, { name: 'AES-GCM', length: 256 }, false, ['encrypt']);
+  const ct = await crypto.subtle.encrypt({ name: 'AES-GCM', iv, additionalData: enc.encode(key.kid) }, aes, enc.encode(JSON.stringify(obj)));
+  return { app: 'RANKARA-ONANKET', v: 1, kid: key.kid, epk: b64(await crypto.subtle.exportKey('raw', eph.publicKey)), salt: b64(salt), iv: b64(iv), ct: b64(ct) };
+}
+
+/* ------------------------------ yardımcılar ------------------------------ */
+const isNone = (q, v) => q.none && v === q.none;
+function answered(q, a) {
+  const v = a[q.k];
+  if (q.t === 'yn') return v && Object.values(v).some((x) => x === 'e' || x === 'h' || x === 'b');
+  if (q.t === 'likert') return v && Object.values(v).some((x) => typeof x === 'number');
+  if (q.t === 'multi') return Array.isArray(v) && v.length > 0;
+  return v !== undefined && v !== null && v !== '';
+}
+const visibleQs = (sec, a) => sec.q.filter((q) => !q.when || q.when(a));
+function valText(q, v) {
+  if (v === NEG) return NEG;
+  if (q.t === 'multi') return v.join(', ');
+  if (q.t === 'yn') return q.items.filter(([k]) => v[k]).map(([k, l]) => `${l}: ${v[k] === 'e' ? 'Evet' : v[k] === 'h' ? 'Hayır' : 'Emin değilim'}`).join(' | ');
+  if (q.t === 'likert') return q.items.filter(([k]) => typeof v[k] === 'number').map(([k, l]) => `${l} ${v[k]}`).join(', ');
+  if (q.t === 'num') return v + ' ' + (q.unit || '');
+  return String(v);
+}
+function secDone(id) { return S.pick[id] === 'fill'; }
+
+/* hasta yanıtlarını iPad'in anlayacağı alanlara çevirir */
+function buildPayload() {
+  const a = S.ans, A = {}, lines = [], skipped = [], skippedQ = [];
+  const kim = { dosya: normDosya(S.kim.dosya), by: +S.kim.by, sex: S.kim.sex };
+  for (const sec of SECTIONS) {
+    if (!secDone(sec.id)) { skipped.push(sec.ad); continue; }
+    for (const q of visibleQs(sec, a)) {
+      const v = a[q.k];
+      if (!answered(q, a)) { skippedQ.push(q.l); continue; }
+      lines.push({ s: sec.ad, l: q.t === 'yn' ? q.l : q.l, v: valText(q, v) });
+      if (v === NEG) continue;
+      if (q.t === 'yn') {
+        const o = {}; for (const [k] of q.items) if (v[k] === 'e') o[k] = true; else if (v[k] === 'h') o[k] = false;
+        if (q.k === 'ek1') A.ek1 = { ...(A.ek1 || {}), ...o }; else A['ek_' + q.k] = o;
+      } else if (q.t === 'likert') {
+        const o = {}; for (const [k] of q.items) if (typeof v[k] === 'number') o[k] = v[k]; A[q.k] = o;
+      } else if (q.t === 'num') A[q.k] = +v;
+      else A[q.k] = v;
+    }
+  }
+  /* aile → EK-1 12, 13, 14 */
+  const fam = a.aile;
+  if (secDone('oz') && Array.isArray(fam) && fam.length && !fam.includes('Bilmiyorum') && fam[0] !== NEG) {
+    A.ek1 = A.ek1 || {};
+    A.ek1.s12 = fam.includes('<35 yaş ani ölüm'); A.ek1.s13 = fam.some((x) => FAM_HER.includes(x)); A.ek1.s14 = fam.includes('<35 yaş pil / ICD');
+  }
+  if (A.aile) { A.aile = A.aile.filter((x) => x !== 'Bilmiyorum'); if (!A.aile.length) delete A.aile; }
+  return { app: 'RANKARA-ONANKET', v: 1, ts: new Date().toISOString(), kim, a: A, lines, skippedSections: skipped, skippedQuestions: skippedQ, surveyVersion: VERSION };
+}
+
+/* ------------------------------ ekranlar ------------------------------ */
+const LOGO = '<svg viewBox="0 0 64 64"><rect width="64" height="64" rx="15" fill="#E8711A"/><path d="M32 51 L14.5 33.5 C8.5 27.5 9.5 17.5 17 14.6 C22.6 12.5 28.4 14.6 32 19.6 C35.6 14.6 41.4 12.5 47 14.6 C54.5 17.5 55.5 27.5 49.5 33.5 Z" fill="none" stroke="#fff" stroke-width="4" stroke-linejoin="round"/><path d="M5 34 H20.5 L24.5 27 L29.5 42.5 L35 18.5 L39.5 34 H59" fill="none" stroke="#E8711A" stroke-width="10" stroke-linejoin="round"/><path d="M5 34 H20.5 L24.5 27 L29.5 42.5 L35 18.5 L39.5 34 H59" fill="none" stroke="#fff" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+const hdrBar = () => `<div class="top">${LOGO}<div><b>RANKARA · ${esc(CLINIC.pol)}</b><small>${esc(CLINIC.ad)}</small></div></div>`;
+const prog = () => { const i = FLOW.indexOf(S.cur); return `<div class="bar" aria-hidden="true"><i style="width:${Math.round(100 * i / (FLOW.length - 1))}%"></i></div>`; };
+
+function vIntro() {
+  return `${hdrBar()}<h1>Spor Kardiyolojisi Ön Değerlendirme Anketi</h1>
+  <div class="card purpose"><h2>Bu anket ne için?</h2>
+    <p>Randevunuzdan önce kısa bir anket doldurmanız, hekiminizin vizit süresini muayeneye, EKG’ye ve kalp ultrasonuna ayırmasını sağlar. Cevaplarınız, spor yaparken kalbiniz için bir risk olup olmadığını değerlendirmemize yardım eder.</p>
+    <p><b>Bu anket tanı koymaz, EKG ve muayenenin yerini tutmaz, sağlık raporu yerine geçmez.</b> Bilgileriniz reklam ya da ticari bir amaçla kullanılmaz. Bilimsel bir çalışmada kullanılmaları ancak sizin ayrıca vereceğiniz yazılı onayla olur.</p></div>
+  <div class="card"><h2>Doldurmak tamamen sizin tercihiniz</h2>
+    <ul class="tick"><li>Anketi doldurmak zorunda değilsiniz. Doldurmazsanız aynı sorular randevuda yüz yüze sorulur.</li>
+    <li>Her bölümün başında <b>“Vizitte konuşalım”</b> diyerek o bölümü atlayabilirsiniz.</li>
+    <li>Cevaplamak istemediğiniz soruyu boş bırakabilirsiniz; hassas sorularda ayrıca <b>“Yanıtlamak istemiyorum”</b> seçeneği vardır.</li>
+    <li>Cevaplarınızı randevuda hekiminizle birlikte gözden geçirip düzeltebilirsiniz.</li></ul></div>
+  <div class="card"><h2>Hangi bilgiler isteniyor?</h2>
+    <p>Bu anketteki cevaplar <b>sağlık bilgisidir</b> ve kişisel verilerin korunmasında özel nitelikli veri sayılır. Ad, soyad, T.C. kimlik numarası, telefon ve adres <b>sorulmaz</b>. Sizi yalnızca klinikte size verilen <b>dosya numarası</b>, doğum yılınız ve cinsiyetiniz tanımlar.</p></div>
+  <div class="card"><h2>Bilgileriniz nasıl korunur?</h2>
+    <ul class="tick"><li><b>Cevaplarınız yalnızca bu telefonda işlenir.</b> E-postaya, Google’a, bir forma ya da herhangi bir sunucuya gönderilmez.</li>
+    <li>Anketin sonunda cevaplarınız <b>şifreli bir dosyaya</b> dönüştürülür. Dosyayı yalnızca kliniğin iPad’indeki anahtar açabilir; telefonunuzdan başkasına iletseniz bile içi okunamaz.</li>
+    <li>Dosyayı siz kliniğe iletirsiniz (AirDrop, Quick Share, e-posta ya da randevuda elden). Yalnızca kliniğe gönderin.</li>
+    <li>Doldururken cevaplarınız bu telefonda yalnızca açık sekmede geçici tutulur; sekmeyi kapatınca silinir.</li>
+    <li>Klinikte kayıtlar şifreli olarak yalnızca poliklinik cihazında saklanır, internete ya da hastane dışındaki bir sisteme aktarılmaz.</li>
+    <li>Bu sayfayı barındıran sunucu yalnızca sayfanın kendisini sunar, cevaplarınız ona ulaşmaz. Sayfayı açarken IP adresiniz barındırıcının teknik günlüklerine düşebilir.</li></ul>
+    <p class="small muted">Kişisel verilerinizin işlenmesine ilişkin aydınlatma metni randevuda size verilecek, açık rızanız yazılı olarak alınacaktır. Kişisel Verilerin Korunması Kanunu’nun 11. maddesindeki haklarınız (bilgi isteme, düzeltme, silme gibi) için hastanemizin veri sorumlusuna başvurabilirsiniz.${CLINIC.kvkkIletisim ? ' ' + esc(CLINIC.kvkkIletisim) : ''}</p></div>
+  <div class="card"><h2>18 yaşından küçükler</h2><p>18 yaşından küçükseniz anketi anne ya da babanızla birlikte doldurun; randevuya da velinizle gelin.</p></div>
+  <div class="card"><label class="check"><input type="checkbox" id="consent" ${S.consent ? 'checked' : ''}><span>Yukarıdakileri okudum. Anketi kendi isteğimle dolduruyorum ve cevaplarımın şifreli olarak bu kliniğin hekimine iletilmesini istiyorum.</span></label></div>`;
+}
+function vKim() {
+  const yr = new Date().getFullYear(); const years = []; for (let y = yr - 14; y >= 1935; y--) years.push(y);
+  const k = S.kim;
+  return `${hdrBar()}${prog()}<div class="steplabel">Kimlik bilgisi içermez</div><h1>Sizi dosyanızla eşleştirelim</h1>
+  <div class="card purpose"><p class="small" style="margin:0">Cevaplarınız yalnızca bu üç bilgiyle doğru dosyaya eklenir. Ad ve T.C. kimlik numarası sorulmaz.</p></div>
+  <div class="q"><p class="ql">Dosya numaranız</p><p class="help">Randevu alırken size söylenen numara. Örnek: SK-0012</p><input type="text" id="dosya" value="${esc(k.dosya)}" autocapitalize="characters" autocomplete="off" inputmode="text" placeholder="SK-0000" maxlength="7"></div>
+  <div class="q"><p class="ql">Doğum yılınız</p><select id="by"><option value="">Seçin</option>${years.map((y) => `<option value="${y}" ${String(k.by) === String(y) ? 'selected' : ''}>${y}</option>`).join('')}</select></div>
+  <div class="q"><p class="ql">Cinsiyetiniz</p><div class="chips">${[['E', 'Erkek'], ['K', 'Kadın']].map(([v, l]) => `<button class="chip" data-a="sex" data-v="${v}" aria-pressed="${k.sex === v}">${l}</button>`).join('')}</div></div>`;
+}
+function qHTML(q) {
+  const v = S.ans[q.k]; const neg = v === NEG; let body = '';
+  const negChip = q.neg ? `<button class="chip atla" data-a="neg" data-k="${q.k}" aria-pressed="${neg}">${NEG}</button>` : '';
+  if (q.t === 'single') body = `<div class="chips">${q.o.map((o) => `<button class="chip" data-a="single" data-k="${q.k}" data-v="${esc(o)}" aria-pressed="${v === o}">${esc(o)}</button>`).join('')}${negChip}</div>`;
+  else if (q.t === 'multi') { const arr = Array.isArray(v) ? v : []; const all = [...q.o, ...(q.none ? [q.none] : []), ...(q.extra ? [q.extra] : [])];
+    body = `<div class="chips">${all.map((o) => `<button class="chip" data-a="multi" data-k="${q.k}" data-v="${esc(o)}" aria-pressed="${arr.includes(o)}">${esc(o)}</button>`).join('')}${negChip}</div>`; }
+  else if (q.t === 'yn') { const o = (v && typeof v === 'object') ? v : {};
+    body = `<div class="yn">${q.items.map(([k, l]) => `<div class="it"><p class="t">${esc(l)}</p><div class="chips">${[['e', 'Evet'], ['h', 'Hayır'], ['b', 'Emin değilim']].map(([c, t]) => `<button class="chip" data-a="yn" data-k="${q.k}" data-i="${k}" data-v="${c}" aria-pressed="${o[k] === c}">${t}</button>`).join('')}</div></div>`).join('')}</div>`; }
+  else if (q.t === 'likert') { const o = (v && typeof v === 'object') ? v : {};
+    body = `<div class="lk">${q.items.map(([k, l, lo, hi]) => `<div class="it"><p class="t">${esc(l)}</p><div class="row7">${[1, 2, 3, 4, 5, 6, 7].map((n) => `<button class="chip" data-a="lk" data-k="${q.k}" data-i="${k}" data-v="${n}" aria-pressed="${o[k] === n}">${n}</button>`).join('')}</div><div class="ends"><span>${esc(lo)}</span><span>${esc(hi)}</span></div></div>`).join('')}</div>`; }
+  else if (q.t === 'num') body = `<div class="num"><input type="number" inputmode="${q.dec ? 'decimal' : 'numeric'}" step="${q.dec ? '0.5' : '1'}" min="${q.min}" max="${q.max}" data-a="num" data-k="${q.k}" value="${v ?? ''}"><span>${esc(q.unit || '')}</span></div>`;
+  else if (q.t === 'text') body = `<textarea data-a="text" data-k="${q.k}" maxlength="300" placeholder="İsteğe bağlı">${esc(v ?? '')}</textarea>`;
+  return `<div class="q"><p class="ql">${esc(q.l)}</p>${q.help ? `<p class="help">${esc(q.help)}</p>` : ''}${body}</div>`;
+}
+function vSec(sec) {
+  const p = S.pick[sec.id];
+  const head = `${hdrBar()}${prog()}<div class="steplabel">Bölüm ${SECTIONS.indexOf(sec) + 1} / ${SECTIONS.length}</div><h1>${esc(sec.ad)}</h1><div class="card purpose"><p class="small" style="margin:0"><b>Neden soruyoruz?</b> ${esc(sec.ne)}</p></div>${sec.uyari ? `<div class="alert bad">${esc(sec.uyari)}</div>` : ''}`;
+  if (!p) return `${head}<div class="card"><h2>Bu bölümü şimdi doldurmak ister misiniz?</h2><p class="muted">İstemezseniz bu sorular randevuda yüz yüze sorulur.</p><div class="row"><button class="btn pri" data-a="pick" data-id="${sec.id}" data-v="fill">Dolduracağım</button><button class="btn" data-a="pick" data-id="${sec.id}" data-v="skip">Vizitte konuşalım</button></div></div>`;
+  if (p === 'skip') return `${head}<div class="card"><p>Bu bölümü atladınız; sorular randevuda sorulacak.</p><button class="btn sm" data-a="pick" data-id="${sec.id}" data-v="fill">Yine de doldurmak istiyorum</button></div>`;
+  return `${head}<p class="small muted">Cevaplamak istemediğiniz soruyu boş bırakabilirsiniz.</p>${visibleQs(sec, S.ans).map(qHTML).join('')}<div class="row" style="margin-top:6px"><button class="btn sm" data-a="pick" data-id="${sec.id}" data-v="skip">Bu bölümü vizitte konuşalım</button></div>`;
+}
+function vReview() {
+  const P = buildPayload(); const secs = {}; P.lines.forEach((x) => (secs[x.s] = secs[x.s] || []).push(x));
+  const sym = S.ans.ek1 && ['s5', 's6', 's7', 's10'].some((k) => S.ans.ek1[k] === 'e') && secDone('kalp');
+  return `${hdrBar()}${prog()}<h1>Cevaplarınızı gözden geçirin</h1><p class="muted">Bu cevaplar randevuda hekiminizin önüne gelecek. Hatalıysa ilgili bölüme dönüp düzeltebilirsiniz.</p>
+  ${sym ? '<div class="alert warn">Egzersizle ilgili kalp yakınması bildirdiniz. Bunu randevuda öncelikle konuşacağız. Yakınma şu anda sürüyorsa randevuyu beklemeyin; en yakın acile başvurun ya da 112’yi arayın.</div>' : ''}
+  ${Object.keys(secs).length ? Object.entries(secs).map(([s, ls]) => `<div class="card"><h3>${esc(s)}</h3><dl>${ls.map((x) => `<dt>${esc(x.l)}</dt><dd>${esc(x.v)}</dd>`).join('')}</dl><div class="sec"><button class="btn sm" data-a="goto" data-v="${SECTIONS.find((z) => z.ad === s).id}">Düzenle</button></div></div>`).join('') : '<div class="card"><p>Hiçbir bölümü doldurmadınız. İsterseniz yalnızca dosya numaranızı içeren boş bir dosya oluşturabilir ya da anketi randevuda yüz yüze yapabilirsiniz.</p></div>'}
+  ${P.skippedSections.length ? `<div class="card"><h3>Randevuya bıraktığınız bölümler</h3><p class="muted" style="margin:0">${P.skippedSections.map(esc).join(', ')}</p></div>` : ''}
+  <div class="card"><p class="small muted" style="margin:0">“Dosyayı oluştur” dediğinizde cevaplarınız kliniğin anahtarıyla şifrelenir. Bundan sonra dosya yalnızca kliniğin iPad’inde açılabilir.</p></div>`;
+}
+function vOut() {
+  const P = OUT.payload;
+  const bring = ['Kimliğiniz ve randevu bilginiz', 'Daha önce yaptırdığınız EKG, kalp ultrasonu (eko), efor testi, Holter, kan tahlili ve görüntüleme sonuçları (varsa CD’leri)', 'Kullandığınız ilaçların kutuları ya da listesi, kullandığınız takviye ürünleri', 'Akıllı saat ya da bileklik kullanıyorsanız dinlenme nabzı ve antrenman özetinizin ekran görüntüleri', 'Lisanslı sporcuysanız lisansınız ve kulüp sağlık raporunuz', 'Varsa daha önce size söylenen spor kısıtlamasına ilişkin belge'];
+  return `${hdrBar()}<h1>Dosyanız hazır</h1>
+  <div class="alert ok">Cevaplarınız şifrelendi. Dosya yalnızca kliniğin iPad’inde açılabilir.</div>
+  <div class="card"><h2>Dosyayı kliniğe iletin</h2>
+    <p>“Dosyayı paylaş”a dokunun, açılan menüden bir yöntem seçin. Hangi yöntemi seçerseniz seçin dosyanın içi şifreli olduğu için okunamaz.</p>
+    <ul class="tick"><li><b>iPhone:</b> AirDrop ile randevuda kliniğin iPad’ini seçin.</li><li><b>Android:</b> Quick Share, Bluetooth ya da e-posta.</li>${CLINIC.eposta ? `<li><b>E-posta:</b> dosyayı <b>${esc(CLINIC.eposta)}</b> adresine ek olarak gönderin.</li>` : ''}<li><b>Başka bir yöntem bulamazsanız:</b> “Telefona kaydet”i seçin, randevuda ekibimize gösterin.</li></ul>
+    <div class="row"><button class="btn org" data-a="share">Dosyayı paylaş</button><button class="btn" data-a="dl">Telefona kaydet</button></div>
+    <p class="small muted" style="margin-top:12px">Dosya yalnızca kliniğin cihazında açılabilir. Kliniğin dışında kimseye göndermenize gerek yok.</p>
+    <details><summary class="small">Kodu kopyala (paylaşım menüsü çalışmazsa)</summary><div class="code" id="code">${esc(OUT.text.slice(0, 160))}…</div><button class="btn sm" data-a="copy" style="margin-top:8px">Şifreli kodu kopyala</button></details></div>
+  <div class="card"><h2>Randevuya gelirken yanınızda bulundurun</h2><ul class="tick">${bring.map((b) => `<li>${esc(b)}</li>`).join('')}</ul>
+    <p class="small muted">Efor testi ya da başka bir tetkik planlanmışsa kıyafet, ayakkabı, yemek ve kafein ile ilgili hazırlık bilgisi randevu verilirken ayrıca söylenir.${CLINIC.hazirlik ? ' ' + esc(CLINIC.hazirlik) : ''}</p></div>
+  <div class="card"><h2>Nasıl geleceksiniz?</h2><ul class="tick"><li>Randevu saatinden yaklaşık 15 dakika önce gelin.</li><li>Vizitte sırasıyla görüşme, muayene, EKG ve kalp ultrasonu yapılır; gerekirse ek tetkik planlanır.</li><li>Gerekirse bazı kısa ölçekleri (uyku, ruh hali, beslenme) ekibimiz sizinle yüz yüze uygular.</li>
+    ${CLINIC.adres ? `<li>Adres: ${esc(CLINIC.adres)}</li>` : ''}${CLINIC.ulasim ? `<li>Ulaşım: ${esc(CLINIC.ulasim)}</li>` : ''}${CLINIC.tel ? `<li>Telefon: ${esc(CLINIC.tel)}</li>` : ''}${CLINIC.randevuNot ? `<li>${esc(CLINIC.randevuNot)}</li>` : ''}</ul>
+    <p class="small muted" style="margin:0">${esc(CLINIC.ad)} · ${esc(CLINIC.pol)}</p></div>
+  <div class="card"><h3>Kendi kopyanız</h3><p class="small muted">İsterseniz verdiğiniz cevapların okunabilir bir kopyasını alabilirsiniz. Kopya şifrelenmez; telefonunuzda nerede saklanacağı size aittir.</p><div class="row"><button class="btn sm" data-a="copytxt">Cevaplarımı metin olarak kopyala</button><button class="btn sm" data-a="wipe">Telefondaki taslağı sil</button></div></div>`;
+}
+function vError(m) { return `${hdrBar()}<h1>Bağlantı eksik</h1><div class="alert bad">${esc(m)}</div><p class="muted">Lütfen kliniğin size gönderdiği bağlantının tamamını açın. Sorun sürerse randevuda anketi yüz yüze yapabiliriz.</p>`; }
+
+/* ------------------------------ çizim ------------------------------ */
+function validKim() { const d = normDosya(S.kim.dosya); return !!d && !!S.kim.by && !!S.kim.sex; }
+function normDosya(x) { const m = /^\s*([A-Za-z]{2})\s*-?\s*(\d{1,4})\s*$/.exec(x || ''); return m ? m[1].toUpperCase() + '-' + m[2].padStart(4, '0') : null; }
+function render() {
+  const nav = $('#nav'), nin = $('#navin'); let html = '', navHTML = ''; S.cur = S.cur || FLOW[S.step || 0];
+  const cur = S.cur;
+  if (!KEY) { $('#app').innerHTML = vError('Bu bağlantıda kliniğin şifreleme anahtarı yok ya da bozuk.'); nav.hidden = true; return; }
+  if (cur === 'intro') { html = vIntro(); navHTML = `<button class="btn pri" data-a="next" ${S.consent ? '' : 'disabled'}>Başla</button>`; }
+  else if (cur === 'kim') { html = vKim(); navHTML = `<button class="btn" data-a="prev">‹ Geri</button><button class="btn pri" data-a="next" ${validKim() ? '' : 'disabled'}>Devam</button>`; }
+  else if (cur === 'review') { html = vReview(); navHTML = `<button class="btn" data-a="prev">‹ Geri</button><button class="btn org" data-a="make">Dosyayı oluştur</button>`; }
+  else if (cur === 'out') { html = vOut(); navHTML = ''; }
+  else { const sec = SECID[cur]; html = vSec(sec); navHTML = `<button class="btn" data-a="prev">‹ Geri</button><button class="btn pri" data-a="next">${S.pick[cur] ? 'Devam' : 'Atla'}</button>`; }
+  const y = window.scrollY; $('#app').innerHTML = html; nin.innerHTML = navHTML; nav.hidden = !navHTML;
+  if (S.keepScroll) { window.scrollTo(0, y); S.keepScroll = false; } else window.scrollTo(0, 0);
+}
+function go(id) { S.cur = id; S.step = FLOW.indexOf(id); save(); render(); }
+const toast = (m) => { const t = document.createElement('div'); t.textContent = m; t.style.cssText = 'position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:#13263A;color:#fff;padding:12px 18px;border-radius:12px;z-index:9;font-size:16px'; document.body.appendChild(t); setTimeout(() => t.remove(), 2600); };
+
+function plainText() { const P = OUT ? OUT.payload : buildPayload(); const g = {}; P.lines.forEach((x) => (g[x.s] = g[x.s] || []).push(x)); return `Spor Kardiyolojisi Ön Değerlendirme Anketi\nDosya: ${P.kim.dosya}\n\n` + Object.entries(g).map(([s, ls]) => s + '\n' + ls.map((x) => `- ${x.l}: ${x.v}`).join('\n')).join('\n\n') + (P.skippedSections.length ? '\n\nRandevuya bırakılan bölümler: ' + P.skippedSections.join(', ') : ''); }
+
+/* ------------------------------ olaylar ------------------------------ */
+document.addEventListener('click', async (e) => {
+  const b = e.target.closest('[data-a]'); if (!b || b.disabled || b.tagName === 'INPUT' || b.tagName === 'TEXTAREA') return;
+  const a = b.dataset.a, k = b.dataset.k, v = b.dataset.v, A = S.ans;
+  const q = k ? SECTIONS.flatMap((s) => s.q).find((x) => x.k === k) : null;
+  S.keepScroll = true;
+  switch (a) {
+    case 'next': { const i = FLOW.indexOf(S.cur); go(FLOW[Math.min(i + 1, FLOW.length - 1)]); return; }
+    case 'prev': { const i = FLOW.indexOf(S.cur); go(FLOW[Math.max(i - 1, 0)]); return; }
+    case 'goto': go(v); return;
+    case 'sex': S.kim.sex = v; break;
+    case 'pick': S.pick[b.dataset.id] = v; break;
+    case 'single': A[k] = A[k] === v ? undefined : v; break;
+    case 'neg': A[k] = A[k] === NEG ? undefined : NEG; break;
+    case 'multi': { let arr = Array.isArray(A[k]) ? [...A[k]] : []; if (A[k] === NEG) arr = [];
+      if (arr.includes(v)) arr = arr.filter((x) => x !== v);
+      else if (v === q.none || v === q.extra) arr = [v];
+      else arr = [...arr.filter((x) => x !== q.none && x !== q.extra), v];
+      A[k] = arr.length ? arr : undefined; break; }
+    case 'yn': { const o = { ...(A[k] && typeof A[k] === 'object' ? A[k] : {}) }; const i = b.dataset.i; o[i] = o[i] === v ? undefined : v; A[k] = o; break; }
+    case 'lk': { const o = { ...(A[k] && typeof A[k] === 'object' ? A[k] : {}) }; const i = b.dataset.i, n = +v; o[i] = o[i] === n ? undefined : n; A[k] = o; break; }
+    case 'make': {
+      try { const P = buildPayload(); const box = await sealFor(KEY, P); const text = JSON.stringify(box);
+        OUT = { payload: P, text, name: `RANKARA-onanket-${Array.from(crypto.getRandomValues(new Uint8Array(3)), (x) => x.toString(16).padStart(2, '0')).join('')}.json` }; store.clear(); S.cur = 'out'; render();
+      } catch (err) { toast('Şifreleme yapılamadı. Tarayıcınızı güncelleyip yeniden deneyin.'); } return; }
+    case 'share': { const f = new File([OUT.text], OUT.name, { type: 'application/json' });
+      if (navigator.canShare && navigator.canShare({ files: [f] })) { try { await navigator.share({ files: [f], title: 'RANKARA ön anket' }); } catch (err) { if (!err || err.name !== 'AbortError') toast('Paylaşılamadı; “Telefona kaydet”i deneyin'); } }
+      else toast('Bu telefon dosya paylaşımını desteklemiyor; “Telefona kaydet”i kullanın');
+      return; }
+    case 'dl': { const bl = new Blob([OUT.text], { type: 'application/json' }); const u = URL.createObjectURL(bl); const an = document.createElement('a'); an.href = u; an.download = OUT.name; document.body.appendChild(an); an.click(); setTimeout(() => { URL.revokeObjectURL(u); an.remove(); }, 4000); toast('Dosya kaydedildi'); return; }
+    case 'copy': try { await navigator.clipboard.writeText(OUT.text); toast('Şifreli kod kopyalandı'); } catch (err) { toast('Kopyalanamadı'); } return;
+    case 'copytxt': try { await navigator.clipboard.writeText(plainText()); toast('Cevaplarınız kopyalandı'); } catch (err) { toast('Kopyalanamadı'); } return;
+    case 'wipe': store.clear(); S = { step: 0, ans: {}, pick: {}, consent: false, kim: { dosya: '', by: '', sex: '' } }; toast('Telefondaki taslak silindi'); return;
+  }
+  save(); render();
+});
+document.addEventListener('change', (e) => {
+  const t = e.target;
+  if (t.id === 'consent') { S.consent = t.checked; save(); S.keepScroll = true; render(); return; }
+  if (t.id === 'by') { S.kim.by = t.value; save(); S.keepScroll = true; render(); return; }
+  if (t.id === 'dosya') { S.kim.dosya = t.value; save(); S.keepScroll = true; render(); return; }
+});
+document.addEventListener('input', (e) => {
+  const t = e.target; const k = t.dataset && t.dataset.k; if (!k) return;
+  const q = SECTIONS.flatMap((s) => s.q).find((x) => x.k === k);
+  if (t.dataset.a === 'text') S.ans[k] = t.value.slice(0, 300) || undefined;
+  else if (t.dataset.a === 'num') { const n = parseFloat(String(t.value).replace(',', '.')); S.ans[k] = (isFinite(n) && n >= q.min && n <= q.max) ? n : undefined; }
+  save();
+});
+document.addEventListener('input', (e) => { if (e.target.id === 'dosya') { S.kim.dosya = e.target.value; save(); const nb = document.querySelector('#navin .pri'); if (nb) nb.disabled = !validKim(); } });
+
+(async function boot() {
+  KEY = await loadClinicKey();
+  if (S.cur && !FLOW.includes(S.cur)) S.cur = 'intro';
+  if (S.cur === 'out') S.cur = 'review';
+  render();
+})();
+</script>
+</body>
+</html>
