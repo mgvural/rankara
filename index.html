@@ -1571,7 +1571,7 @@ function render() {
 }
 function topbar(right = '', sub = 'Poliklinik anamnez ve izlem') {
   const noBack = ['home', 'lock', 'setup', 'loading', 'nodb', 'wiz'].includes(S.view);
-  return `<div class="topbar"><div class="brand">${noBack ? '' : '<button class="btn backbtn" data-a="back" aria-label="Geri">‹ Geri</button><button class="btn backbtn homebtn" data-a="home" aria-label="Ana ekran"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h5v-6h4v6h5V10"/></svg></button>'}<div class="logo" aria-hidden="true">${LOGO}</div><div><h1 class="wordmark">RAN<span>KARA</span><b class="verbadge">v2.0</b></h1><small>${esc(sub)}</small></div></div><div class="row">${right}</div></div>`;
+  return `<div class="topbar"><div class="brand">${noBack ? '' : '<button class="btn backbtn" data-a="back" aria-label="Geri">‹ Geri</button><button class="btn backbtn homebtn" data-a="home" aria-label="Ana ekran"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h5v-6h4v6h5V10"/></svg></button>'}<div class="logo" aria-hidden="true">${LOGO}</div><div><h1 class="wordmark">RAN<span>KARA</span><b class="verbadge">v2.1</b></h1><small>${esc(sub)}</small></div></div><div class="row">${right}</div></div>`;
 }
 const LOGO = `<svg viewBox="0 0 64 64"><rect width="64" height="64" rx="15" fill="#E8711A"/><path d="M32 51 L14.5 33.5 C8.5 27.5 9.5 17.5 17 14.6 C22.6 12.5 28.4 14.6 32 19.6 C35.6 14.6 41.4 12.5 47 14.6 C54.5 17.5 55.5 27.5 49.5 33.5 Z" fill="none" stroke="#FFFFFF" stroke-width="4" stroke-linejoin="round"/><path d="M5 34 H20.5 L24.5 27 L29.5 42.5 L35 18.5 L39.5 34 H59" fill="none" stroke="#E8711A" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 34 H20.5 L24.5 27 L29.5 42.5 L35 18.5 L39.5 34 H59" fill="none" stroke="#13263A" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 const ICONSVG = (c) => `<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${c.icon}</svg>`;
@@ -2014,6 +2014,69 @@ function chartPNG(ser, title, unit, ref) {
   ser.forEach((x, i) => { if (i % every === 0 || i === ser.length - 1) g.fillText(x.date.slice(5, 7) + '.' + x.date.slice(2, 4), X(ts[i]), H - Bm + 18); });
   return cv.toDataURL('image/png');
 }
+/* Grafikler test türüne göre gruplanır; aynı testin parametreleri aynı grafikte farklı renklerle.
+   Büyüklükleri ya da birimleri farklı olanlar aynı çerçevede alt alta, kendi ölçekleri ve varsa referans aralığıyla çizilir. */
+const KURS_GRUP_SPOR = [
+  { t: 'KPET · oksijen tüketimi', u: 'mL/kg/dk', k: [['vo2', 'Tepe VO₂'], ['vt2', 'VT2'], ['vt1', 'VT1']] },
+  { t: 'KPET · kalp hızı', u: '/dk', k: [['hrpeak', 'Tepe kalp hızı'], ['vt2hr', 'VT2 kalp hızı'], ['vt1hr', 'VT1 kalp hızı']] },
+  { t: 'Ekokardiyografi · boyutlar', u: 'mm', k: [['lvedd', 'LVEDD'], ['rvd', 'RV bazal çap'], ['aort', 'Aort kökü'], ['ivs', 'IVS'], ['pw', 'Arka duvar']] },
+  { t: 'Ekokardiyografi · fonksiyon', u: '%', k: [['lvef', 'LVEF'], ['lasr', 'LA rezervuar strain'], ['gls', 'LV GLS (mutlak)', Math.abs], ['rvfws', 'RV serbest duvar strain (mutlak)', Math.abs]] },
+  { t: 'Ekokardiyografi · hacimler', u: 'mL', k: [['lvedv', 'LVEDV'], ['lav', 'LA hacmi'], ['lvesv', 'LVESV']] },
+  { t: 'EKG · aralıklar', u: 'ms', k: [['qtc', 'QTc'], ['pr', 'PR'], ['qrs', 'QRS']] },
+  { t: 'Kalp hızı', u: '/dk', k: [['nabiz', 'Muayene nabzı'], ['ekhr', 'EKG kalp hızı'], ['hort', 'Holter ortalama'], ['hmin', 'Holter en düşük']] },
+  { t: 'Ritim Holter', u: 'adet / gün', k: [['hves', 'VES'], ['hsves', 'SVES']] },
+  { t: 'Kan basıncı', u: 'mmHg', k: [['ta_s', 'Sistolik (muayene)'], ['ta_d', 'Diyastolik (muayene)'], ['a24s', '24 saat sistolik'], ['a24d', '24 saat diyastolik']] },
+  { t: 'Antrenman yükü', u: 'AU', k: [['yuk', 'Haftalık yük']] },
+  { t: 'İyilik hali (düşük değer iyi)', u: 'puan', k: [['iyilik', 'İyilik hali toplamı']] },
+  { t: 'Vücut kompozisyonu', u: 'kg', k: [['kilo', 'Kilo'], ['kaskg', 'Kas kütlesi'], ['yagsiz', 'Yağsız kitle']] },
+  { t: 'Vücut yağ oranı', u: '%', k: [['yag', 'Yağ oranı']] },
+  { t: 'Hemogram ve demir', stack: true, k: [['hb', 'Hemoglobin', null, 'g/dL'], ['ferritin', 'Ferritin', null, 'ng/mL'], ['tsat', 'Transferrin satürasyonu', null, '%']] },
+  { t: 'Kas ve kalp hasarı belirteçleri', stack: true, k: [['ck', 'CK', null, 'U/L'], ['trop', 'hs-troponin', null, 'ng/L'], ['ntpro', 'NT-proBNP', null, 'ng/L']] },
+  { t: 'D vitamini', u: 'ng/mL', k: [['vitd', '25-OH D vitamini']] },
+  { t: 'Böbrek, lipid ve metabolik', stack: true, k: [['kreat', 'Kreatinin', null, 'mg/dL'], ['ldl', 'LDL-K', null, 'mg/dL'], ['hba1c', 'HbA1c', null, '%'], ['tsh', 'TSH', null, 'mIU/L']] }];
+function kursGroups(p, ck) {
+  if (ck === 'spor') return KURS_GRUP_SPOR;
+  const cat = numCatalog(); const by = {}; const labs = [];
+  for (const k of TREND_FIRST) { if (k === 'iyilik' || k === 'yuk') continue; const c = cat[k] || {}; if (REF[k]) { labs.push([k, c.ad || k, null, c.unit || '']); continue; } const u = c.unit || ''; (by[u] = by[u] || []).push([k, c.ad || k]); }
+  const lg = []; for (let i = 0; i < labs.length; i += 4) lg.push({ t: 'Laboratuvar' + (labs.length > 4 ? ' (' + (i / 4 + 1) + ')' : ''), stack: true, k: labs.slice(i, i + 4) });
+  return [...Object.entries(by).map(([u, k]) => ({ t: k.length === 1 ? k[0][1] : 'Ölçümler', u, k })), ...lg];
+}
+const KURS_RENK = ['#E8711A', '#1F4E79', '#1E8E4F', '#8E44AD', '#C0392B', '#0E7F86', '#B8860B', '#5D6D7E', '#D35400', '#2E86C1'];
+function refPos(v, r) { if (!r) return null; const [lo, hi] = r; if (lo != null && hi != null) return (v - lo) / (hi - lo) * 100; if (hi != null) return v / hi * 100; if (lo != null) return lo ? 100 * (v - lo) / lo + 0 : null; return null; }
+function chartGroupPNG(lines, title, unit, forceStack) {
+  const means = lines.map((ln) => ln.pts.reduce((a, q) => a + Math.abs(q.y), 0) / ln.pts.length); const stack = lines.length > 1 && (forceStack || Math.max(...means) / Math.max(1e-9, Math.min(...means)) > 2);
+  const W = 620, LH = 16, dpr = 2, F = 'Arial, Helvetica, sans-serif'; const legendRows = Math.ceil(lines.length / 3); const PH = stack ? 88 : 190; const GAP = 26; const np = stack ? lines.length : 1;
+  const L = 56, Rr = 18, T = 32 + legendRows * LH + 10 + (stack ? 6 : 0), Bm = 30; const H = T + np * PH + (np - 1) * GAP + Bm;
+  const cv = document.createElement('canvas'); cv.width = W * dpr; cv.height = H * dpr; const g = cv.getContext('2d'); g.scale(dpr, dpr); g.fillStyle = '#ffffff'; g.fillRect(0, 0, W, H);
+  const sameU = lines.every((ln) => (ln.u || unit) === (lines[0].u || unit)); const tu = sameU ? (lines[0].u || unit) : '';
+  g.font = `bold 13px ${F}`; g.fillStyle = '#13263A'; g.textAlign = 'left'; g.fillText(title + (tu ? ` (${tu})` : ''), L, 18);
+  lines.forEach((ln, i) => { const x = L + (i % 3) * 185, y = 32 + Math.floor(i / 3) * LH; g.strokeStyle = ln.c; g.lineWidth = 3; g.beginPath(); g.moveTo(x, y - 4); g.lineTo(x + 16, y - 4); g.stroke(); g.fillStyle = '#13263A'; g.font = `11px ${F}`; g.textAlign = 'left'; g.fillText(ln.ad + (!sameU && ln.u ? ` (${ln.u})` : ''), x + 21, y); });
+  const ts = [...new Set(lines.flatMap((ln) => ln.pts.map((q) => q.d)))].sort(); const tt = ts.map((d) => Date.parse(d)); const t0 = Math.min(...tt), t1 = Math.max(...tt);
+  const X = (d) => { const t = Date.parse(d); return t1 === t0 ? (L + W - Rr) / 2 : L + 8 + (W - L - Rr - 16) * (t - t0) / (t1 - t0); };
+  const scale = (vals, ref, top, h) => { let mn = Math.min(...vals), mx = Math.max(...vals); const sp0 = (mx - mn) || Math.abs(mx) * 0.1 || 1;
+    if (ref) { if (ref[0] != null && ref[0] >= mn - sp0) mn = Math.min(mn, ref[0]); if (ref[1] != null && ref[1] <= mx + sp0) mx = Math.max(mx, ref[1]); }
+    if (mn === mx) { mn -= 1; mx += 1; } const pad = (mx - mn) * 0.15; mn -= pad; mx += pad; if (vals.every((v) => v >= 0) && mn < 0) mn = 0;
+    const nT = stack ? 2 : 4; const raw = (mx - mn) / nT; const mag = 10 ** Math.floor(Math.log10(raw)); const st = [1, 2, 2.5, 5, 10].map((m) => m * mag).find((q) => q >= raw); mn = Math.floor(mn / st + 1e-9) * st; mx = Math.ceil(mx / st - 1e-9) * st;
+    return { mn, mx, st, nt: Math.round((mx - mn) / st), Y: (v) => top + h * (1 - (v - mn) / (mx - mn)), dg: st >= 1 ? 0 : st >= 0.1 ? 1 : 2 }; };
+  const panels = stack ? lines.map((ln, i) => ({ lines: [ln], top: T + i * (PH + GAP) })) : [{ lines, top: T }];
+  for (const pn of panels) { const ref = pn.lines.length === 1 ? pn.lines[0].ref : null; const sc = scale(pn.lines.flatMap((ln) => ln.pts.map((q) => q.y)), ref, pn.top, PH); const { Y } = sc;
+    if (stack) { g.font = `bold 11px ${F}`; g.fillStyle = pn.lines[0].c; g.textAlign = 'left'; g.fillText(pn.lines[0].ad + (pn.lines[0].u ? ` (${pn.lines[0].u})` : ''), L, pn.top - 9); }
+    if (ref) { const a = Math.max(ref[0] != null ? ref[0] : sc.mn, sc.mn), b = Math.min(ref[1] != null ? ref[1] : sc.mx, sc.mx); if (b > a) { g.fillStyle = 'rgba(30,142,79,0.10)'; g.fillRect(L, Y(b), W - L - Rr, Y(a) - Y(b)); g.font = `9.5px ${F}`; g.fillStyle = '#1E8E4F'; g.textAlign = 'right'; g.fillText('referans aralığı', W - Rr - 4, Y(b) + 11); } }
+    g.font = `11px ${F}`; g.lineWidth = 1; for (let i = 0; i <= sc.nt; i++) { const v = sc.mn + sc.st * i; const y = Y(v); g.strokeStyle = '#E3E9EF'; g.beginPath(); g.moveTo(L, y); g.lineTo(W - Rr, y); g.stroke(); g.fillStyle = '#5A6D80'; g.textAlign = 'right'; g.fillText(trn(v.toFixed(sc.dg)), L - 6, y + 4); }
+    for (const ln of pn.lines) { g.strokeStyle = ln.c; g.lineWidth = 2.2; g.beginPath(); ln.pts.forEach((q, i) => { const px = X(q.d), py = Y(q.y); if (i) g.lineTo(px, py); else g.moveTo(px, py); }); g.stroke();
+      ln.pts.forEach((q, i) => { const px = X(q.d), py = Y(q.y); g.fillStyle = q.out ? '#C0392B' : ln.c; g.beginPath(); g.arc(px, py, q.out ? 4.4 : 3.4, 0, 7); g.fill();
+        if (q.out || i === ln.pts.length - 1 || i === 0 || (stack && ln.pts.length <= 10)) { g.font = `bold 10px ${F}`; g.textAlign = 'center'; g.fillStyle = q.out ? '#C0392B' : ln.c; g.fillText(trn(q.v), px, py - 7); } }); } }
+  g.font = `10.5px ${F}`; g.fillStyle = '#5A6D80'; g.textAlign = 'center'; let lx = -1e9; const xl = X(ts[ts.length - 1]); ts.forEach((d, i) => { const x = X(d); const last = i === ts.length - 1; if ((x - lx >= 36 && (last || xl - x >= 36)) || (last && x - lx >= 20)) { g.fillText(d.slice(5, 7) + '.' + d.slice(2, 4), x, H - Bm + 18); lx = x; } });
+  return cv.toDataURL('image/png');
+}
+function kursCharts(p, ck) { const out = [];
+  for (const gr of kursGroups(p, ck)) { const lines = []; let ci = 0;
+    for (const [k, ad, fn, u] of gr.k) { const ser = seriesOf(p, k); if (ser.length < 2) continue; const rf = refOf(k, { p, d: {} }); const c = KURS_RENK[ci++ % KURS_RENK.length];
+      const pts = ser.map((x) => { const v = fn ? fn(x.v) : x.v; const rs = rf ? refState(k, x.v, { p, d: {} }) : null; return { d: x.date, v, y: v, out: !!(rs && rs.s) }; }).filter((q) => q.y != null && isFinite(q.y));
+      if (pts.length >= 2) lines.push({ ad, u: u || gr.u || '', c, pts, ref: rf && !fn && rf[2] !== 'x' ? rf : null }); }
+    if (lines.length) out.push({ t: gr.t, png: chartGroupPNG(lines, gr.t, gr.u, gr.stack) }); }
+  return out; }
+
 async function saveCourseDOCX() {
   if (!S.dl) { toast('Bu görünümde dosya kaydı kullanılamıyor'); return; }
   const p = S.pts.get(S.cur); const ck = S.clinic; const c = CL[ck]; const recs = recsOf(p, ck).slice().sort((a, b) => String(a.d.tarih || '').localeCompare(String(b.d.tarih || ''))); if (!recs.length) return;
@@ -2026,8 +2089,8 @@ async function saveCourseDOCX() {
   const parts = []; parts.push(`<h4>${isIlk ? 'İlk değerlendirme' : 'Kayıtlar'}</h4><p>${esc(summaryText(p, ck, first) + (recs.length > 1 ? inl(first) : ''))}</p>`);
     const rest = recs.slice(1); if (rest.length) parts.push(`<h4>İzlem (${rest.length} kayıt)</h4>` + rest.map((r) => `<p>${esc((ck === 'spor' ? summaryText(p, ck, r) : fmtDate(r.d.tarih) + ' · ' + formOf(ck, r.f).ad + ': ' + summaryText(p, ck, r).replace(/^[^.]*görüldü[^.]*\.\s*/, '')) + inl(r))}</p>`).join(''));
   const on = ozOneriler(p, ck, last); if (on.length) parts.push(`<p><b>ÖNERİLER (${fmtDate(last.d.tarih)})</b></p>` + on.map((x, i) => `<p>${i + 1}- ${esc(x)}</p>`).join(''));
-  const charts = []; for (const [k, ad, u] of kursParams(p, ck)) { const ser = seriesOf(p, k); if (ser.length < 2) continue; const rf = refOf(k, { p, d: {} }); charts.push(`<div class="dimg"><img src="${chartPNG(ser, ad, u, rf && rf[2] !== 'x' ? rf : null)}" alt=""></div>`); }
-  if (charts.length) parts.push(`<h4>Önemli parametrelerin zaman içindeki değişimi</h4><p>Turuncu çizgi ölçümlerin seyrini, yeşil alan varsa referans aralığını gösterir; kırmızı noktalar referans dışı değerlerdir.</p>` + charts.join(''));
+  const charts = kursCharts(p, ck).map((c) => `<div class="dimg"><img src="${c.png}" alt=""></div>`);
+  if (charts.length) parts.push(`<h4>Önemli parametrelerin zaman içindeki değişimi</h4><p>Aynı testin parametreleri aynı grafikte, farklı renklerle gösterilmiştir. Büyüklükleri ya da birimleri farklı olan parametreler aynı grafikte alt alta, kendi ölçekleriyle çizilmiştir. Yeşil alan referans aralığıdır. Kırmızı noktalar referans dışı değerlerdir.</p>` + charts.join(''));
   const host = document.createElement('div'); host.style.cssText = 'position:absolute;left:-9999px;top:0;width:700px';
   host.innerHTML = `<div class="ph"><div><div><b>Atatürk Sanatoryum Eğitim ve Araştırma Hastanesi</b><br>${esc(c.grp === 'lab' ? GR[c.grp].ad + ' · ' + c.ad : c.ad + ' Polikliniği')} · Tüm süreç özeti<br>Dosya no: <b>${esc(fileNo(p, ck))}</b> · ${p.sex === 'K' ? 'Kadın' : 'Erkek'}, ${ageOf(p) ?? '?'} yaş · ${fmtDate(first.d.tarih)} – ${fmtDate(last.d.tarih)} · ${recs.length} kayıt</div></div></div>${parts.join('')}<div class="sig"><div>Hekim adı soyadı, imza</div><div>Tarih: ${fmtDate(todayISO())}</div></div><div class="foot">RANKARA kayıtlarından oluşturulmuştur. Ad ve kimlik numarası içermez; hasta dosya numarasıyla tanımlanır.</div>`;
   document.body.appendChild(host);
@@ -2160,7 +2223,7 @@ function vForms() {
 /* ---------- AYARLAR ---------- */
 function vSettings() {
   return `${topbar()}<div class="stack">
-    <div class="card stack"><div class="small muted">RANKARA sürüm 2.0 · 28.11.2026</div><h2>Veri güvenliği</h2><p>Kayıtlar ve fotoğraflar bu iPad’de, PIN’inizden türetilen anahtarla <b>AES-256</b> ile şifrelenir (PBKDF2, ${ITER.toLocaleString('tr-TR')} tur). Kayıtlar yalnızca bu iPad’de saklanır; uygulama internete ya da başka bir sisteme veri göndermez. Dışarıdan alabildiği tek şey hastanın ön anket dosyasıdır; bu dosya yalnızca bu iPad’deki özel anahtarla açılır, hasta eşleştirmesi yapılır ve siz önizleyip onaylamadan kaydedilmez. Cihaz dışına çıkabilen tek dosya, sizin aldığınız şifreli yedektir.</p>
+    <div class="card stack"><div class="small muted">RANKARA sürüm 2.1 · 28.11.2026</div><h2>Veri güvenliği</h2><p>Kayıtlar ve fotoğraflar bu iPad’de, PIN’inizden türetilen anahtarla <b>AES-256</b> ile şifrelenir (PBKDF2, ${ITER.toLocaleString('tr-TR')} tur). Kayıtlar yalnızca bu iPad’de saklanır; uygulama internete ya da başka bir sisteme veri göndermez. Dışarıdan alabildiği tek şey hastanın ön anket dosyasıdır; bu dosya yalnızca bu iPad’deki özel anahtarla açılır, hasta eşleştirmesi yapılır ve siz önizleyip onaylamadan kaydedilmez. Cihaz dışına çıkabilen tek dosya, sizin aldığınız şifreli yedektir.</p>
       <p>Ad soyad ve T.C. kimlik numarası tutulmaz. Fotoğraf yalnızca açık rıza işaretlenmiş hastada çekilir. 5 dakika işlem yapılmazsa uygulama kilitlenir.</p><p class="muted small">PIN unutulursa kayıtlar açılamaz. Düzenli yedek alın.</p></div>
     <div class="card stack"><h3>Tüm kayıtları sil</h3><p class="muted small">Deneme kayıtlarını temizlemek için. Hasta kayıtları, formlar ve fotoğraflar silinir; PIN ve ön anket bağlantısı kalır.</p><div class="row"><button class="btn danger" data-a="wipe">Tüm kayıtları sil</button></div></div>
     <div class="card stack"><h3>Şifreli yedek</h3><p class="muted small">Yedek dosyası da şifrelidir; yalnızca aynı PIN ile açılır. Kaydederken iCloud Drive’ı değil, <b>iPad’imde</b> klasörünü ya da USB belleği seçin.</p><div class="row"><button class="btn pri" data-a="backup" ${S.dl ? '' : 'disabled'}>Yedek al</button><button class="btn" data-a="restore">Yedekten geri yükle</button></div></div>

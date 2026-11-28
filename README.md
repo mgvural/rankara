@@ -41,3 +41,6 @@
 
 - Hasta ekranında **Tüm süreç özeti (Word)**: ilk değerlendirme ve tüm izlem vizitleri tarih sırasıyla hekim diliyle, her vizitin önerileri, son vizitin ÖNERİLER listesi ve önemli parametrelerin zaman içindeki değişimini gösteren grafikler (referans aralığı ve referans dışı noktalar işaretli).
 - Spor kardiyolojisi izlem vizitleri de hekim diliyle özetlenir; özetlerde yaş vizit tarihine göre hesaplanır.
+
+## 2.1
+- "Tüm süreç özeti (Word)" grafikleri test türüne göre gruplandı (KPET, EKO, EKG, Holter, kan basıncı, biyokimya…). Aynı testin parametreleri aynı grafikte farklı renklerle; birimi ya da büyüklüğü farklı olanlar alt alta, kendi ölçekleri ve referans aralıklarıyla.
