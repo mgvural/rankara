@@ -99,13 +99,23 @@ const SECTIONS = [
     { t: 'single', k: 'duzey', l: 'Spor düzeyiniz', o: ['Rekreasyonel', 'Amatör yarışmacı', 'Profesyonel / milli'], help: 'Rekreasyonel: sağlık ve keyif için, yarışma amacı olmadan.' },
     { t: 'single', k: 'lisansvar', l: 'Lisansınız var mı?', o: ['Lisans yok', 'Lisansım var', 'Bilmiyorum'] },
     { t: 'num', k: 'yil', l: 'Kaç yıldır düzenli spor yapıyorsunuz?', unit: 'yıl', min: 0, max: 60 },
-    { t: 'single', k: 'yaris', l: 'Yarışmalara katılıyor musunuz?', o: ['Yok', 'Yerel', 'Ulusal', 'Uluslararası'] }
+    { t: 'single', k: 'yaris', l: 'Yarışmalara katılıyor musunuz?', o: ['Yok', 'Ulusal', 'Uluslararası'] },
+    { t: 'text', k: 'sonyaris', l: 'En son katıldığınız yarışın adı', when: (a) => a.yaris === 'Ulusal' || a.yaris === 'Uluslararası' },
+    { t: 'text', k: 'sonyariskm', l: 'O yarışın mesafesi (km)', when: (a) => a.yaris === 'Ulusal' || a.yaris === 'Uluslararası' },
+    { t: 'text', k: 'sonyarissure', l: 'Bitirme süreniz (saat:dakika:saniye)', when: (a) => a.yaris === 'Ulusal' || a.yaris === 'Uluslararası' }
   ] },
   { id: 'yuk', ad: 'Antrenman yükünüz', ne: 'Son 4 haftadaki olağan haftanızı düşünerek cevaplayın. Yük artışı ya da ani değişiklik kalp açısından önemlidir.', q: [
     { t: 'single', k: 'gun', l: 'Haftada kaç gün antrenman yapıyorsunuz?', o: ['0', '1', '2', '3', '4', '5', '6', '7'] },
     { t: 'single', k: 'sure', l: 'Bir antrenman ortalama kaç dakika sürüyor?', o: ['20', '30', '45', '60', '75', '90', '120', '150', '180'] },
     { t: 'single', k: 'rpe', l: 'Antrenmanlarınız ortalama ne kadar zor? (0 dinlenme, 5 zor, 10 en zor)', o: ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10'] },
-    { t: 'num', k: 'km', l: 'Haftalık toplam mesafe (koşu, bisiklet, yüzme, triatlonda)', unit: 'km', min: 0, max: 500, when: (a) => sportsOf(a).some((x) => ENDURANCE.has(x)) },
+    { t: 'num', k: 'kosukm', l: 'Haftada toplam kaç km koşuyorsunuz?', unit: 'km', min: 0, max: 300, when: (a) => hasSp(a, 'Koşu', 'Triatlon') },
+    { t: 'num', k: 'kosudk', l: 'Haftada toplam kaç dakika koşuyorsunuz?', unit: 'dk', min: 0, max: 2400, when: (a) => hasSp(a, 'Koşu', 'Triatlon') },
+    { t: 'num', k: 'bisikm', l: 'Haftada toplam kaç km bisiklet sürüyorsunuz?', unit: 'km', min: 0, max: 1500, when: (a) => hasSp(a, 'Bisiklet', 'Triatlon') },
+    { t: 'num', k: 'bisidk', l: 'Haftada toplam kaç dakika bisiklet sürüyorsunuz?', unit: 'dk', min: 0, max: 3000, when: (a) => hasSp(a, 'Bisiklet', 'Triatlon') },
+    { t: 'num', k: 'yuzm', l: 'Haftada toplam kaç metre yüzüyorsunuz?', unit: 'm', min: 0, max: 80000, when: (a) => hasSp(a, 'Yüzme', 'Triatlon') },
+    { t: 'num', k: 'yuzdk', l: 'Haftada toplam kaç dakika yüzüyorsunuz?', unit: 'dk', min: 0, max: 2400, when: (a) => hasSp(a, 'Yüzme', 'Triatlon') },
+    { t: 'single', k: 'direnc', l: 'Direnç (ağırlık) egzersizi yapıyor musunuz?', o: ['Evet', 'Hayır'], when: (a) => !hasSp(a, 'Fitness / ağırlık', 'Crossfit') },
+    { t: 'num', k: 'direncdk', l: 'Haftada kaç dakika direnç (ağırlık) egzersizi yapıyorsunuz?', unit: 'dk', min: 0, max: 1200, when: (a) => hasSp(a, 'Fitness / ağırlık', 'Crossfit') || a.direnc === 'Evet' },
     { t: 'single', k: 'sezon', l: 'Şu an hangi dönemdesiniz?', o: ['Hazırlık', 'Yarışma sezonu', 'Geçiş / dinlenme', 'Belirli bir dönem yok'] },
     { t: 'single', k: 'degisim', l: 'Son 12 haftada antrenman yükünüz nasıl değişti?', o: ['Belirgin arttı', 'Biraz arttı', 'Değişmedi', 'Azaldı'] },
     { t: 'single', k: 'ara', l: 'Son 3 ayda hastalık, ateş ya da sakatlık yüzünden antrenmana ara verdiniz mi?', o: ['Hayır', 'Evet, 1 haftadan kısa', 'Evet, 1 hafta ya da daha uzun'] }
@@ -126,8 +136,12 @@ const SECTIONS = [
     { t: 'text', k: 'kalpnot', l: 'Evet dediyseniz kısaca anlatın (ne zaman, ne kadar sürdü, hâlâ oluyor mu?)' }
   ] },
   { id: 'oz', ad: 'Özgeçmiş ve aile öyküsü', ne: 'Geçmiş hastalıklarınız ve ailenizdeki kalp hastalıkları, risk değerlendirmesinin temelidir.', q: [
-    { t: 'multi', k: 'oz', l: 'Sizde hiç oldu mu ya da var mı?', o: ['Kalp hastalığı', 'Miyokardit / viral enfeksiyon', 'Hipertansiyon', 'Diyabet', 'Kronik böbrek hastalığı', 'Astım', 'Tiroid hastalığı', 'Kalp girişimi / cerrahi'], none: 'Yok', help: 'Miyokardit: kalp kasının virüs gibi bir nedenle iltihaplanması.' },
+    { t: 'multi', k: 'oz', l: 'Sizde hiç oldu mu ya da var mı?', o: ['Koroner arter hastalığı', 'Kalp yetersizliği', 'Kardiyomiyopati', 'Kapak hastalığı', 'Doğuştan kalp hastalığı', 'Aritmi (AF, SVT, VT)', 'Senkop öyküsü', 'Miyokardit / perikardit', 'Geçirilmiş viral enfeksiyon (son 3 ay)', 'Kalp girişimi / cerrahi', 'Pil / ICD', 'Hipertansiyon', 'Hiperlipidemi', 'Diyabet', 'Kronik böbrek hastalığı', 'Astım', 'KOAH', 'Tiroid hastalığı', 'Anemi', 'İnme / TİA', 'Diğer'], none: 'Yok', help: 'Miyokardit: kalp kasının virüs gibi bir nedenle iltihaplanması.' },
+    { t: 'text', k: 'ozdig', l: 'Diğer hastalığınız', when: (a) => (a.oz || []).includes('Diğer') },
     { t: 'single', k: 'nikotin', l: 'Sigara / nikotin', o: ['Hiç', 'Bırakmış', 'Sigara', 'Elektronik sigara', 'Nargile'] },
+    { t: 'num', k: 'sigyil', l: 'Kaç yıl sigara içtiniz?', unit: 'yıl', min: 0, max: 70, when: (a) => a.nikotin === 'Sigara' || a.nikotin === 'Bırakmış' },
+    { t: 'num', k: 'sigpak', l: 'Günde kaç paket içtiniz / içiyorsunuz?', unit: 'paket', min: 0, max: 5, dec: true, when: (a) => a.nikotin === 'Sigara' || a.nikotin === 'Bırakmış' },
+    { t: 'num', k: 'birakyil', l: 'Hangi yıl bıraktınız?', unit: '', min: 1950, max: 2030, when: (a) => a.nikotin === 'Bırakmış' },
     { t: 'multi', k: 'aile', l: 'Ailenizde (anne, baba, kardeş, çocuk, amca, hala, dayı, teyze, büyükanne ve büyükbaba) şunlardan biri oldu mu?', o: ['<35 yaş ani ölüm', 'HKMP', 'DKMP', 'ARVK', 'Uzun QT / Brugada / KPVT', 'Marfan / aortopati', 'Erken koroner hastalık', '<35 yaş pil / ICD'], none: 'Yok', extra: 'Bilmiyorum',
       help: '35 yaşından önce ani ve beklenmedik ölüm; HKMP: kalın kalp kası hastalığı; DKMP: genişlemiş kalp kası hastalığı; ARVK: sağ karıncık kas hastalığı; Uzun QT / Brugada / KPVT: kalıtsal ritim hastalıkları; Marfan / aortopati: ana damar genişlemesi; Erken koroner hastalık: erkekte 55, kadında 65 yaşından önce kalp krizi ya da damar hastalığı.' }
   ] },
@@ -159,6 +173,7 @@ const SECID = Object.fromEntries(SECTIONS.map((s) => [s.id, s]));
 const FLOW = ['intro', 'kim', ...SECTIONS.map((s) => s.id), 'review', 'out'];
 
 function sportsOf(a) { return [a.spor, ...((Array.isArray(a.spordiger) ? a.spordiger : []).filter((x) => x !== 'Yok'))].filter(Boolean); }
+const hasSp = (a, ...n) => sportsOf(a).some((x) => n.includes(x));
 
 /* ------------------------------ durum ------------------------------ */
 const store = { get() { try { return JSON.parse(sessionStorage.getItem('rk_on') || 'null'); } catch (e) { return null; } }, set(o) { try { sessionStorage.setItem('rk_on', JSON.stringify(o)); } catch (e) { } }, clear() { try { sessionStorage.removeItem('rk_on'); } catch (e) { } } };
