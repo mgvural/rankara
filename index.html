@@ -1036,7 +1036,7 @@ const CLINICS = [
         { ad: 'Nabız bölgeleri', f: [num('hrrest', 'Dinlenme kalp hızı', { unit: '/dk', min: 30, max: 120, start: 60, steps: [1, 5] }), num('hrmax', 'Ölçülen maksimal kalp hızı', { unit: '/dk', min: 80, max: 230, start: 175, steps: [1, 5], hint: 'Son stres EKO\'dan alınır; yoksa girin.' }), calc('zones', 'Kişisel nabız bölgeleri', C_ZONES)] },
         { ad: 'Haftalık plan', f: [single('degr', 'Değerlendirme sonucu', ['Kısıtlama olmadan', 'Önerilerle', 'Yalnız belirtilen sporlar', 'Sonuç çıkana kadar yoğun egzersize ara']), single('gunp', 'Haftada kaç gün', ['3', '4', '5', '6', '7']),
           single('bolge', 'Ağırlıklı bölge', ['1. bölge', '2. bölge', '3. bölge', '4. bölge']), num('ust', 'Üst sınır kalp hızı', { unit: '/dk', min: 80, max: 220, start: 150, steps: [1, 5], opt: true }), single('kas', 'Kas güçlendirme', ['Haftada 2 gün', 'Haftada 3 gün', 'Şimdilik yok']),
-          multi('ozel', 'Özel öneriler', ['Isınma ve soğuma', 'Sıcakta yoğunluğu azaltma', 'Hastayken egzersiz yok', 'Yarış öncesi kontrol', 'Nabızı saatle izleme', 'Evde tansiyon ölçümü', 'Takviyeyi danışarak kullanma', 'OED ve temel yaşam desteği']), ...KARAR_ORTAK] },
+          multi('ozel', 'Özel öneriler', ['Isınma ve soğuma', 'Sıcakta yoğunluğu azaltma', 'Hastayken egzersiz yok', 'Yarış öncesi kontrol', 'Nabzı saatle izleme', 'Evde tansiyon ölçümü', 'Takviyeyi danışarak kullanma', 'OED ve temel yaşam desteği']), ...KARAR_ORTAK] },
       ], sum: (d) => [d.gunp ? d.gunp + ' gün/hafta' : '', d.bolge].filter(Boolean).join(' · ') },
     ] },
 
@@ -1570,7 +1570,7 @@ function render() {
 }
 function topbar(right = '', sub = 'Poliklinik anamnez ve izlem') {
   const noBack = ['home', 'lock', 'setup', 'loading', 'nodb', 'wiz'].includes(S.view);
-  return `<div class="topbar"><div class="brand">${noBack ? '' : '<button class="btn backbtn" data-a="back" aria-label="Geri">‹ Geri</button><button class="btn backbtn homebtn" data-a="home" aria-label="Ana ekran"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h5v-6h4v6h5V10"/></svg></button>'}<div class="logo" aria-hidden="true">${LOGO}</div><div><h1 class="wordmark">RAN<span>KARA</span><b class="verbadge">v1.5</b></h1><small>${esc(sub)}</small></div></div><div class="row">${right}</div></div>`;
+  return `<div class="topbar"><div class="brand">${noBack ? '' : '<button class="btn backbtn" data-a="back" aria-label="Geri">‹ Geri</button><button class="btn backbtn homebtn" data-a="home" aria-label="Ana ekran"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h5v-6h4v6h5V10"/></svg></button>'}<div class="logo" aria-hidden="true">${LOGO}</div><div><h1 class="wordmark">RAN<span>KARA</span><b class="verbadge">v1.6</b></h1><small>${esc(sub)}</small></div></div><div class="row">${right}</div></div>`;
 }
 const LOGO = `<svg viewBox="0 0 64 64"><rect width="64" height="64" rx="15" fill="#E8711A"/><path d="M32 51 L14.5 33.5 C8.5 27.5 9.5 17.5 17 14.6 C22.6 12.5 28.4 14.6 32 19.6 C35.6 14.6 41.4 12.5 47 14.6 C54.5 17.5 55.5 27.5 49.5 33.5 Z" fill="none" stroke="#FFFFFF" stroke-width="4" stroke-linejoin="round"/><path d="M5 34 H20.5 L24.5 27 L29.5 42.5 L35 18.5 L39.5 34 H59" fill="none" stroke="#E8711A" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 34 H20.5 L24.5 27 L29.5 42.5 L35 18.5 L39.5 34 H59" fill="none" stroke="#13263A" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 const ICONSVG = (c) => `<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${c.icon}</svg>`;
@@ -1813,7 +1813,7 @@ function vWiz() {
   const W = S.wiz; const p = S.pts.get(S.cur); const c = CL[S.clinic]; const f = formOf(c.k, W.rec.f); const steps = [...f.steps, { ad: 'Özet ve rapor', ozet: true }];
   const st = steps[W.step]; const ctx = ctxOf(p, c.k, W.rec);
   const hdr = `${topbar(`<button class="btn" data-a="wizcancel">Vazgeç</button>`, c.ad)}<div class="row between"><div class="steplabel">${f.ad} · Bölüm ${W.step + 1} / ${steps.length} · ${esc(fileNo(p, c.k))}</div></div><div class="progress"><i style="width:${Math.round(100 * (W.step + 1) / steps.length)}%"></i></div><h2 style="margin-bottom:12px">${st.ad}</h2>${alertsHTML(ctx)}`;
-  if (st.ozet) return hdr + `<div class="card row between"><span class="muted small">Raporu kontrol edin. Kaydet’e basınca kayıt şifrelenerek saklanır.</span><div class="row"><button class="btn pri big" data-a="wizsave">${W.saved ? 'Kaydedildi ✓' : 'Kaydet'}</button><button class="btn big" data-a="pdf" ${S.dl ? '' : 'hidden'}>PDF rapor</button></div></div><div class="sheetwrap" style="margin-top:14px">${reportHTML(p, c.k, W.rec)}</div>`;
+  if (st.ozet) return hdr + `<div class="card row between"><span class="muted small">Raporu kontrol edin. Kaydet’e basınca kayıt şifrelenerek saklanır.</span><div class="row"><button class="btn pri big" data-a="wizsave">${W.saved ? 'Kaydedildi ✓' : 'Kaydet'}</button><button class="btn big" data-a="pdf" ${S.dl ? '' : 'hidden'}>PDF rapor</button><button class="btn big" data-a="ozetdocx" ${S.dl ? '' : 'hidden'}>Özet (Word)</button></div></div><div class="sheetwrap" style="margin-top:14px">${reportHTML(p, c.k, W.rec)}</div>`;
   const gate = st.gate ? st.gate(W.rec.d, ctx) : null;
   if (st.segFirst && (W.rec.d.skip || {})[st.seg]) return hdr + `<div class="card stack"><h3>${esc(st.segAd)} bölümü atlandı</h3><p class="muted" style="margin:0">Bu bölüm raporda yer almaz. Devam ederek sonraki bölüme geçebilirsiniz.</p><div class="row"><button class="btn" data-a="segundo" data-v="${st.seg}">Bu bölümü doldur</button></div></div>`;
   const segbar = st.segFirst ? `<div class="segbar"><div><div class="steplabel" style="margin:0">Bölüm</div><b style="font-size:20px">${esc(st.segAd)}</b></div><button class="btn" data-a="segskip" data-v="${st.seg}">Bu bölümü atla</button></div>` : '';
@@ -1865,8 +1865,8 @@ function reportHTML(p, ck, rec) {
 }
 function vReport() {
   const p = S.pts.get(S.cur); const c = CL[S.clinic]; const rec = recsOf(p, c.k).find((r) => r.id === S.rv); if (!rec) return vPatient(); const f = formOf(c.k, rec.f);
-  return `${topbar('', c.ad)}<div class="card row between"><h2>${fmtDate(rec.d.tarih)} · ${f.ad}</h2><div class="row"><button class="btn" data-a="editrec">Düzenle</button><button class="btn" data-a="docx" ${S.dl ? '' : 'hidden'}>Word</button><button class="btn pri" data-a="pdf" ${S.dl ? '' : 'hidden'}>PDF</button><button class="btn danger" data-a="delrec">Sil</button></div></div>
-    <div class="row" style="margin:10px 0"><button class="chip sm" data-a="phrep" aria-pressed="${S.photoInReport}">Raporda fotoğraf</button>${p.kimRiza === 'Alındı' && p.kim && Object.keys(p.kim).length ? `<button class="chip sm" data-a="idrep" aria-pressed="${S.idInReport}">Raporda kimlik bilgileri</button>` : ''}</div><div class="sheetwrap">${reportHTML(p, c.k, rec)}</div>`;
+  return `${topbar('', c.ad)}<div class="card row between"><h2>${fmtDate(rec.d.tarih)} · ${f.ad}</h2><div class="row"><button class="btn" data-a="editrec">Düzenle</button><button class="btn" data-a="docx" ${S.dl ? '' : 'hidden'}>Word</button><button class="btn pri" data-a="pdf" ${S.dl ? '' : 'hidden'}>PDF</button><button class="btn" data-a="ozetdocx" ${S.dl ? '' : 'hidden'}>Özet (Word)</button><button class="btn danger" data-a="delrec">Sil</button></div></div>
+    <div class="row" style="margin:10px 0"><button class="chip sm" data-a="phrep" aria-pressed="${S.photoInReport}">Raporda fotoğraf</button>${p.kimRiza === 'Alındı' && p.kim && Object.keys(p.kim).length ? `<button class="chip sm" data-a="idrep" aria-pressed="${S.idInReport}">Raporda kimlik bilgileri</button>` : ''}</div><details class="card" style="margin:0 0 12px"><summary style="cursor:pointer;font-weight:700">Hekime özet (tek paragraf)</summary><p style="margin:10px 0 0;line-height:1.6">${esc(summaryText(p, c.k, rec))}</p></details><div class="sheetwrap">${reportHTML(p, c.k, rec)}</div>`;
 }
 async function makePDF() {
   if (!S.dl) { toast('Bu görünümde dosya kaydı kullanılamıyor'); return; }
@@ -1923,6 +1923,150 @@ async function saveDOCX() {
   if (!S.dl) { toast('Bu görünümde dosya kaydı kullanılamıyor'); return; } const node = $('#rpt'); if (!node) return;
   try { await S.dl.save({ filename: reportName('docx'), data: await docxBlob(node) }); toast('Word kaydedildi'); } catch (e) { toast(e && e.code === 'declined' ? 'Kaydetme iptal edildi' : 'Word oluşturulamadı'); }
 }
+/* ---------- HEKİME ÖZET (tek paragraf, Word) ----------
+   Kayıttaki doldurulmuş tüm bölümler, bir hekime yazılan özet gibi tek paragrafta toplanır. Boş ve atlanan bölümler yazılmaz. */
+/* soru biçimindeki etiketlerin özet karşılığı (etiket metnine göre; başka formlardaki aynı anahtarlar etkilenmez) */
+const OZ_LBL = { 'Haftada kaç gün antrenman yapıyor?': ['haftalık antrenman günü', 'gün'], 'Son 7 günde kaç gün antrenman?': ['son 7 günde antrenman günü', 'gün'], 'Bir antrenman ortalama kaç dakika?': ['antrenman süresi', 'dk'],
+  'Ortalama zorluk (0 dinlenme, 5 zor, 10 en zor)': ['ortalama zorluk (0–10)', ''], 'Kaç yıldır spor yapıyor': ['spor yılı', ''], 'Direnç (ağırlık) egzersizi yapıyor mu?': [null, ''],
+  'Haftada kaç dakika direnç egzersizi yapıyor?': ['haftalık direnç egzersizi', ''], 'Kaç yıl sigara içti?': ['sigara süresi', ''], 'Günde kaç paket?': ['günlük paket', ''], 'Hangi yıl bıraktı?': ['bırakma yılı', ''],
+  'Günde kaç fincan kahve / çay?': ['günlük kahve/çay (fincan)', ''], 'Gece ortalama uyku süresi': ['gece uyku süresi', ''] };
+const ozL = (f) => OZ_LBL[f.label];
+const OZ_PAIRS = [['ta_s', 'ta_d', 'TA (sağ kol)'], ['ietas', 'ietad', 'TA']];
+const ozLow = (t) => { t = String(t); return /^[A-ZÇĞİÖŞÜ][a-zçğıöşü]/.test(t) ? (t[0] === 'İ' ? 'i' : t[0] === 'I' ? 'ı' : t[0].toLocaleLowerCase('tr-TR')) + t.slice(1) : t; };
+const ozLabel = (f) => (ozL(f) ? ozL(f)[0] : ozLow(String(f.label).replace(/\?$/, '').replace(/\s*\((isteğe bağlı|farklıysa)\)/, '')));
+const ozNum = (v, unit) => (unit === '%' ? '%' + trn(v) : trn(v) + (unit ? ' ' + unit : ''));
+const ozJoin = (a) => (a.length < 2 ? a.join('') : a.slice(0, -1).join(', ') + ' ve ' + a[a.length - 1]);
+function ozPhrase(fl, d, ctx) {
+  const v = d[fl.k]; const lb = ozLabel(fl);
+  if (fl.t === 'calc') { const r = fl.fn(ctx); if (!r || !lb || /geçerlidir|girilmeden|gerekir/.test(r.v)) return null; const vv = trn(r.v); return vv.toLocaleLowerCase('tr-TR').startsWith(String(lb).toLocaleLowerCase('tr-TR').split(' ')[0]) ? vv : `${lb} ${vv}`; }
+  if (v == null || v === '' || (Array.isArray(v) && !v.length) || lb == null) return null;
+  switch (fl.t) {
+    case 'num': { const rs = refState(fl.k, v, ctx); return `${lb} ${ozNum(v, fl.unit || (ozL(fl) || [])[1] || '')}${rs && rs.s ? (rs.s > 0 ? ' (normalin üstünde)' : ' (normalin altında)') : ''}`; }
+    case 'single': return `${lb} ${ozLow(v)}${(ozL(fl) || [])[1] ? ' ' + ozL(fl)[1] : ''}`;
+    case 'multi': { const xs = v.map(ozLow); return xs.length === 1 && fl.none && v[0] === fl.none ? `${lb} ${ozLow(fl.none)}` : `${lb} ${ozJoin(xs)}`; }
+    case 'yn': { const yes = fl.items.filter(([k]) => v[k] === true).map(([, l]) => ozLow(String(l).replace(/^\d+\.\s*/, ''))); const ans = fl.items.filter(([k]) => v[k] != null).length; if (!ans) return null; return yes.length ? `${lb} kapsamında ${ozJoin(yes)} bildirildi` : `${lb} kapsamındaki soruların hepsine hayır yanıtı verildi`; }
+    case 'likert': { const parts = fl.items.filter(([k]) => isNum(v[k])).map(([k, l]) => `${ozLow(l)} ${v[k]}`); return parts.length ? `${lb} (1 en iyi, 7 en kötü): ${parts.join(', ')}` : null; }
+    case 'text': return `${lb}: ${String(v).trim().replace(/\s+/g, ' ').replace(/[.]$/, '')}`;
+    case 'check': { const n = fl.items.filter(([k]) => v[k] === true).length; return n ? `${lb} ${n}/${fl.items.length} madde tamam` : null; }
+    case 'scales': return null;
+  }
+  return null;
+}
+function summaryText(p, ck, rec) {
+  if (ck === 'spor' && rec.f === 'ilk') return ozetSporIlk(p, ck, rec);
+  const c = CL[ck]; const f = formOf(ck, rec.f); const ctx = ctxOf(p, ck, rec); const d = rec.d;
+  const age = ageOf(p); const out = [];
+  out.push(`${fileNo(p, ck)} dosya numaralı ${age != null ? age + ' yaşındaki ' : ''}${p.sex === 'K' ? 'kadın' : 'erkek'} hasta, ${fmtDate(d.tarih) || fmtDate(todayISO())} tarihinde ${c.grp === 'lab' ? 'Görüntüleme Laboratuvarında' : c.ad + ' polikliniğinde'} ${ozLow(f.ad)} için görüldü${ck === 'spor' && p.rankara === 'Evet' ? ' ve RANKARA çalışmasına dahildir' : ''}.`);
+  for (const st of f.steps) {
+    if (st.when && !st.when(d, ctx)) continue; if (st.seg && (d.skip || {})[st.seg]) continue;
+    const fields = st.f.flatMap((x) => (x.t === 'view' ? (vis(x, ctx) ? x.f : []) : [x])).filter((x) => x.t !== 'head' && x.t !== 'date' && x.t !== 'labocr' && vis(x, ctx));
+    const used = new Set(); const parts = [];
+    for (const [a, b, l] of OZ_PAIRS) if (fields.some((x) => x.k === a) && isNum(d[a]) && isNum(d[b])) { parts.push(`${l} ${d[a]}/${d[b]} mmHg`); used.add(a); used.add(b); }
+    for (const fl of fields) { if (used.has(fl.k)) continue; const ph = ozPhrase(fl, d, ctx); if (ph) parts.push(ph); }
+    if (st.f.some((x) => x.t === 'scales') && d.sc) { const sc = SCALES.filter((s) => d.sc[s.k] != null).map((s) => `${s.ad} ${d.sc[s.k]}${s.unit ? ' ' + s.unit : ' puan'}`); if (sc.length) parts.push('ölçekler: ' + sc.join(', ')); }
+    if (!parts.length) continue;
+    const ad = st.ad.replace(/ · /g, ', ');
+    out.push(`${ad}: ${parts.join('; ')}.`);
+  }
+  return out.join(' ').replace(/\s+/g, ' ').replace(/ ,/g, ',');
+}
+function curRec() { const p = S.pts.get(S.cur); return S.view === 'report' ? recsOf(p, S.clinic).find((r) => r.id === S.rv) : S.wiz && S.wiz.rec; }
+async function saveSummaryDOCX() {
+  if (!S.dl) { toast('Bu görünümde dosya kaydı kullanılamıyor'); return; }
+  const p = S.pts.get(S.cur); const ck = S.clinic; const rec = curRec(); if (!p || !rec) return; const c = CL[ck];
+  const host = document.createElement('div'); host.style.cssText = 'position:absolute;left:-9999px;top:0;width:700px';
+  host.innerHTML = `<div class="ph"><div><div><b>Atatürk Sanatoryum Eğitim ve Araştırma Hastanesi</b><br>${esc(c.grp === 'lab' ? GR[c.grp].ad + ' · ' + c.ad : c.ad + ' Polikliniği')} · Hekime özet<br>Dosya no: <b>${esc(fileNo(p, ck))}</b> · ${p.sex === 'K' ? 'Kadın' : 'Erkek'}, ${ageOf(p) ?? '?'} yaş · Tarih: ${fmtDate(rec.d.tarih)}</div></div></div><h4>Özet</h4><p>${esc(summaryText(p, ck, rec))}</p><div class="sig"><div>Hekim adı soyadı, imza</div><div>Tarih: ${fmtDate(rec.d.tarih)}</div></div><div class="foot">RANKARA kayıtlarından oluşturulmuştur. Ad ve kimlik numarası içermez; hasta dosya numarasıyla tanımlanır.</div>`;
+  document.body.appendChild(host);
+  try { await S.dl.save({ filename: reportName('docx').replace(/\.docx$/, '_ozet.docx'), data: await docxBlob(host) }); toast('Özet kaydedildi'); } catch (e) { toast(e && e.code === 'declined' ? 'Kaydetme iptal edildi' : 'Özet oluşturulamadı'); } finally { host.remove(); }
+}
+
+/* Spor kardiyolojisi ilk değerlendirme: hekim diliyle özet */
+function ozetSporIlk(p, ck, rec) {
+  const d = rec.d; const ctx = ctxOf(p, ck, rec); const sk = d.skip || {}; const S2 = [];
+  const has = (k) => d[k] != null && d[k] !== '' && !(Array.isArray(d[k]) && !d[k].length);
+  const N = (k, u = '') => (isNum(d[k]) ? (u === '%' ? '%' + trn(d[k]).replace(/^-/, '−') : trn(d[k]) + (u ? (u === '/dk' ? '/dk' : ' ' + u) : '')) : null);
+  const F = (k, u, lb) => { const x = N(k, u); if (x == null) return null; const rs = refState(k, d[k], ctx); return `${lb ? lb + ' ' : ''}${x}${rs && rs.s ? (rs.s > 0 ? ' (yüksek)' : ' (düşük)') : ''}`; };
+  const L = (k) => (Array.isArray(d[k]) ? d[k].filter((x) => x !== 'Yok' && x !== 'Normal') : []);
+  const low = (t) => ozLow(String(t).replace(/\s*\(([^()]*)\)/g, ', $1').replace(/ · /g, ', ')); const J = (a) => ozJoin(a.filter(Boolean)); const C = (k) => { const fl = formOf(ck, rec.f).steps.flatMap((s) => s.f).find((x) => x.k === k); const r = fl && fl.fn ? fl.fn(ctx) : null; return r; };
+  const on = (seg) => !sk[seg];
+  // kimlik ve spor
+  const age = ageOf(p); const sp = [d.spor, ...L('spordiger')].filter(Boolean).map(low);
+  let s = `${fileNo(p, ck)} dosya numaralı ${age != null ? age + ' yaşında ' : ''}${p.sex === 'K' ? 'kadın' : 'erkek'}${has('duzey') ? ', ' + low(d.duzey) + ' düzeyinde' : ''}${has('tur') ? ' ' + low(d.tur) + ' sporcusu' : ' sporcu'}${sp.length ? ' (' + J(sp) + ')' : ''}, ${fmtDate(d.tarih) || ''} tarihinde ilk değerlendirme için görüldü`;
+  s += p.rankara === 'Evet' ? ' ve RANKARA çalışmasına dahildir.' : '.'; S2.push(s);
+  const a = []; if (isNum(d.yil)) a.push(`${d.yil} yıldır spor yapıyor`); if (has('lisans')) a.push(d.lisans === 'Lisans yok' ? 'lisansı yok' : `${d.lisans} lisanslı`);
+  if (d.yaris && d.yaris !== 'Yok') a.push(`${low(d.yaris)} yarışlara katılıyor${has('sonyaris') ? ` (son yarış: ${[d.sonyaris, has('sonyariskm') ? d.sonyariskm + ' km' : '', d.sonyarissure].filter(Boolean).join(', ')})` : ''}`); else if (d.yaris === 'Yok') a.push('yarışlara katılmıyor');
+  if (d.ped === 'Evet') a.push('performans artırıcı madde kullandığını bildirdi');
+  if (a.length) S2.push(ozCap(J(a)) + '.');
+  // antrenman yükü
+  const y = []; if (has('gun')) y.push(`haftada ${d.gun} gün${has('sure') ? ', ortalama ' + d.sure + ' dakika' : ''}${has('rpe') ? ' ve ' + d.rpe + '/10 zorlukta' : ''} antrenman yapıyor${loadOf(d) != null ? ' (haftalık yük ' + loadOf(d) + ' AU)' : ''}`);
+  const w = []; if (isNum(d.kosukm) || isNum(d.kosudk)) w.push('koşu ' + [N('kosukm', 'km'), N('kosudk', 'dk')].filter(Boolean).join('/'));
+  if (isNum(d.bisikm) || isNum(d.bisidk)) w.push('bisiklet ' + [N('bisikm', 'km'), N('bisidk', 'dk')].filter(Boolean).join('/'));
+  if (isNum(d.yuzm) || isNum(d.yuzdk)) w.push('yüzme ' + [N('yuzm', 'm'), N('yuzdk', 'dk')].filter(Boolean).join('/'));
+  if (isNum(d.direncdk)) w.push('direnç egzersizi ' + N('direncdk', 'dk')); if (w.length) y.push('haftalık hacmi ' + J(w));
+  if (has('sezon')) y.push(d.sezon === 'Belirli bir dönem yok' ? 'belirli bir sezon dönemi yok' : low(d.sezon) + ' dönemindedir');
+  if (y.length) S2.push(ozCap(y.join('; ')) + '.');
+  // başvuru ve öykü
+  const ek1 = d.ek1 || {}; const ekY = [['s5', 'eforla bayılma ya da presenkop'], ['s6', 'eforla göğüs ağrısı'], ['s7', 'eforla çarpıntı'], ['s8', 'bilinen kalp sorunu'], ['s9', 'daha önce kalp tetkiki istenmesi'], ['s10', 'eforla aşırı nefes darlığı ya da baş dönmesi']].filter(([k]) => ek1[k] === true).map(([, l]) => l);
+  const b = []; if (L('neden').length) b.push(`başvuru nedeni ${J(L('neden').map(low))}`);
+  if (Object.keys(ek1).length) b.push(ekY.length ? `sporcu beyanında (EK-1) ${J(ekY)} bildirdi` : 'sporcu beyanındaki (EK-1) soruların hepsine hayır yanıtı verdi');
+  const ek2 = [...L('ek2').filter((x) => x !== 'Diğer').map(low), has('ek2dig') ? d.ek2dig : '', ...L('ek2e').map(low)].filter(Boolean); if (has('ek2') || has('ek2e')) b.push(ek2.length ? `EK-2 bulgusu olarak ${J(ek2)} saptandı` : 'EK-2 muayene ve EKG bulgusu yok');
+  if (b.length) S2.push(ozCap(b.join('; ')) + '.');
+  const o = []; const OZM = { 'Geçirilmiş viral enfeksiyon (son 3 ay)': 'son 3 ayda geçirilmiş viral enfeksiyon', 'Aritmi (AF, SVT, VT)': 'aritmi' }; const oz = [...L('oz').filter((x) => x !== 'Diğer').map((x) => OZM[x] || low(x)), has('ozdig') ? d.ozdig : ''].filter(Boolean); if (has('oz')) o.push(oz.length ? `özgeçmişinde ${J(oz)} var` : 'özgeçmişi özellik göstermiyor');
+  if (d.nikotin) { const pk = isNum(d.sigyil) && isNum(d.sigpak) ? trn(Math.round(d.sigyil * d.sigpak * 10) / 10) + ' paket-yıl' : ''; o.push(d.nikotin === 'Hiç' ? 'sigara içmemiş' : d.nikotin === 'Bırakmış' ? `${isNum(d.birakyil) ? d.birakyil + ' yılında ' : ''}sigarayı bırakmış${pk ? ' (' + pk + ')' : ''}` : d.nikotin === 'Sigara' ? `sigara içiyor${pk ? ' (' + pk + ')' : ''}` : low(d.nikotin) + ' kullanıyor'); }
+  if (has('aile')) o.push(L('aile').length ? `aile öyküsünde ${J(L('aile'))} var` : 'ailede erken ani ölüm ya da kalıtsal kalp hastalığı öyküsü yok');
+  if (o.length) S2.push(ozCap(o.join('; ')) + '.');
+  // muayene
+  const m = []; if (isNum(d.ta_s) && isNum(d.ta_d)) m.push(`TA ${d.ta_s}/${d.ta_d} mmHg${isNum(d.ta_sol) ? ' (sol kol sistolik ' + d.ta_sol + ')' : ''}`); if (isNum(d.nabiz)) m.push('nabız ' + d.nabiz + '/dk');
+  const bmi = bsaOf ? (isNum(d.boy) && isNum(d.kilo) ? Math.round(d.kilo / ((d.boy / 100) ** 2) * 10) / 10 : null) : null; if (bmi) m.push('VKİ ' + trn(bmi) + ' kg/m²'); if (isNum(d.yag)) m.push('yağ oranı %' + trn(d.yag));
+  const fm = [...L('fm').filter((x) => x !== 'Diğer').map(low), has('fmdig') ? d.fmdig : ''].filter(Boolean);
+  if (m.length || has('fm')) S2.push(`Muayenede ${m.join(', ')}${has('fm') ? (fm.length ? '; ' + J(fm) + ' saptandı' : '; fizik muayene normal') : ''}.`);
+  // EKG
+  if (on('ekg') && (isNum(d.ekhr) || has('ekgn') || has('ekgab'))) { const e = []; const ms = [N('ekhr', '/dk') && 'kalp hızı ' + N('ekhr', '/dk'), N('pr', 'ms') && 'PR ' + N('pr', 'ms'), N('qrs', 'ms') && 'QRS ' + N('qrs', 'ms'), N('qtc', 'ms') && 'QTc ' + N('qtc', 'ms')].filter(Boolean); if (ms.length) e.push(ms.join(', '));
+    if (L('ekgn').length) e.push(`antrenmana bağlı bulgu olarak ${J(L('ekgn').map(low))}`); if (L('ekgbl').length) e.push(`sınırda bulgu olarak ${J(L('ekgbl').map(low))}`); if (L('ekgab').length) e.push(`anormal bulgu olarak ${J(L('ekgab').map(low))}`);
+    const r = C('sekgc'); S2.push(`EKG'de ${e.join('; ')} izlendi${r ? '; uluslararası ölçütlere göre ' + low(r.v) : ''}.`); }
+  // EKO
+  if (on('eko') && (isNum(d.lvedd) || isNum(d.lvef) || isNum(d.gls))) { const e = [F('lvedd', 'mm', 'LVEDD'), F('ivs', 'mm', 'IVS'), F('pw', 'mm', 'arka duvar'), F('lvef', '%', 'LVEF')]; const lvm = C('lvm'); if (lvm) e.push(low(trn(lvm.v))); const idx = C('ieidx'); if (idx) e.push(low(trn(idx.v)));
+    e.push(F('gls', '%', 'LV GLS'), F('rvfws', '%', 'RV serbest duvar strain'), F('lasr', '%', 'LA rezervuar strain')); const dia = C('iedia'); if (dia) e.push(low(trn(dia.v))); e.push(F('tapse', 'mm', 'TAPSE'), F('rvs', 'cm/s', 'RV S′'), F('spab', 'mmHg', 'sPAB'), F('aort', 'mm', 'aort kökü'));
+    S2.push(`Ekokardiyografide ${e.filter(Boolean).join(', ')}${has('ekos') ? '; ' + (d.ekos === 'Sporcu kalbiyle uyumlu' ? 'bulgular sporcu kalbiyle uyumlu' : d.ekos === 'Gri bölge' ? 'bulgular gri bölgede' : 'bulgular patolojik') : ''}${has('ilekonot') ? ' (' + d.ilekonot + ')' : ''}.`); }
+  // Stres EKO
+  if (on('stres') && (isNum(d.esure) || isNum(d.hrmax) || has('sonuc'))) { const e = []; if (isNum(d.esure)) e.push(`${has('prot') ? d.prot + ' protokolüyle ' : ''}${trn(d.esure)} dakika${isNum(d.met) ? ' (' + trn(d.met) + ' MET)' : ''} egzersiz yaptı`); const hr = [N('hrmax', '/dk') && 'maksimal kalp hızı ' + N('hrmax', '/dk'), N('tamax', 'mmHg') && 'tepe sistolik TA ' + N('tamax', 'mmHg')].filter(Boolean); if (hr.length) e.push(hr.join(', '));
+    const neg = []; if (d.st === 'Yok') neg.push('ST değişikliği'); if (d.angina === 'Yok') neg.push('anjina'); if (neg.length) e.push(J(neg) + ' olmadı'); if (d.st && d.st !== 'Yok') e.push('ST ' + low(d.st) + (isNum(d.stmm) ? ' (' + trn(d.stmm) + ' mm)' : '')); if (L('arit').length) e.push(J(L('arit').map((x) => ({ 'VES eforla azalan': 'eforla azalan VES', 'VES eforla artan': 'eforla artan VES' })[x] || low(x))) + ' izlendi');
+    if (isNum(d.ef0) && isNum(d.ef1)) e.push(`LVEF dinlenmede ${N('ef0', '%')}, egzersiz sonrası ${N('ef1', '%')}`); if (isNum(d.g0) && isNum(d.g1)) e.push(`GLS dinlenmede ${N('g0', '%')}, egzersiz sonrası ${N('g1', '%')}`); if (d.dhb === 'Var') e.push('yeni duvar hareket bozukluğu gelişti');
+    S2.push(`Treadmill stres ekokardiyografide ${e.join('; ')}${L('sonuc').length ? '; sonuç: ' + J(L('sonuc').map(low)) : ''}${has('stresnot') ? ' (' + d.stresnot + ')' : ''}.`); }
+  // KPET
+  if (on('kpet') && (isNum(d.vo2) || has('kson'))) { const e = [isNum(d.vo2) ? `tepe VO₂ ${trn(d.vo2)} mL/kg/dk${isNum(d.vo2pred) ? ' (beklenen değere oranı %' + trn(d.vo2pred) + ')' : ''}` : null, F('rer', '', 'RER'), F('hrpeak', '/dk', 'tepe kalp hızı'),
+      isNum(d.vt1) ? `VT1 ${trn(d.vt1)} mL/kg/dk${isNum(d.vt1hr) ? ' (' + d.vt1hr + '/dk)' : ''}` : null, isNum(d.vt2) ? `VT2 ${trn(d.vt2)} mL/kg/dk${isNum(d.vt2hr) ? ' (' + d.vt2hr + '/dk)' : ''}` : null, F('vevco2', '', 'VE/VCO₂ eğimi'), F('bres', '%', 'solunum rezervi'), F('spo2min', '%', 'en düşük SpO₂')];
+    S2.push(`KPET'te ${e.filter(Boolean).join(', ')}${L('kekg').length ? '; ' + J(L('kekg').map(low)) + ' saptandı' : ''}${has('kson') ? '; kardiyorespiratuvar kapasite ' + low(d.kson) : ''}${L('kkis').length ? (d.kkis.includes('Yok (maksimal kardiyak kapasite)') ? ', sınırlayıcı etken yok, maksimal kardiyak kapasiteye ulaşıldı' : ', sınırlayıcı etken ' + J(L('kkis').map(low))) : ''}${has('kpetnot') ? ' (' + d.kpetnot + ')' : ''}.`); }
+  // Holter
+  if (on('holter') && (isNum(d.hort) || isNum(d.hves))) { const e = []; if (isNum(d.hort)) e.push(`ortalama kalp hızı ${d.hort}/dk${isNum(d.hmin) && isNum(d.hmax) ? ' (' + d.hmin + '–' + d.hmax + ')' : ''}`);
+    if (isNum(d.hves)) e.push(`${d.hves} VES${L('hmorf').length ? ' (' + J(L('hmorf').map(low)) + ')' : ''}${L('hbul').length ? ', ' + J(L('hbul').map((x) => ({ 'Eforla baskılanan VES': 'eforla baskılanıyor', 'Eforla artan VES': 'eforla artıyor' })[x] || low(x))) : ''}`); if (isNum(d.hsves)) e.push(d.hsves + ' SVES'); if (L('hsv').length) e.push(J(L('hsv').map(low)));
+    if (L('hilet').length) e.push(J(L('hilet').map(low))); if (has('hsemp')) e.push(low(d.hsemp));
+    S2.push(`${isNum(d.hsure) ? d.hsure + ' saatlik ' : ''}ritim Holter'de ${e.join('; ')}${d.hantr === 'Yapıldı' ? ' (kayıt sırasında antrenman yapıldı)' : ''}${has('holternot') ? ' (' + d.holternot + ')' : ''}.`); }
+  // ABPM
+  if (on('tah') && isNum(d.a24s)) { const r = C('abpm'); S2.push(`Ayaktan kan basıncı izleminde 24 saat ortalaması ${d.a24s}/${d.a24d ?? '?'}${isNum(d.ags) ? ', gündüz ' + d.ags + '/' + (d.agd ?? '?') : ''}${isNum(d.ans) ? ', gece ' + d.ans + '/' + (d.and ?? '?') : ''} mmHg${r ? '; ' + low(r.v).replace(/^ayaktan kan basıncı /, '') : ''}.`); }
+  // MR, BT
+  if (on('mr') && (isNum(d.kmref) || has('lge') || has('mson'))) { const e = [F('mlvedvi', 'mL/m²', 'LVEDV indeksi'), F('kmref', '%', 'LVEF'), F('mrvedvi', 'mL/m²', 'RVEDV indeksi'), F('rvef', '%', 'RVEF'), F('mlvmi', 'g/m²', 'LV kitle indeksi'), F('mwtmax', 'mm', 'maksimal duvar kalınlığı'), d.lge ? (d.lge === 'Var' ? 'LGE var' + (L('lgep').length ? ' (' + J(L('lgep').map(low)) + ')' : '') : 'LGE yok') : null, F('t1', 'ms', 'native T1'), F('ecv', '%', 'ECV')];
+    S2.push(`Kardiyak MR'da ${e.filter(Boolean).join(', ')}${has('mson') ? '; ' + low(d.mson) : ''}.`); }
+  if (on('bt') && (isNum(d.cac) || has('cadrads'))) S2.push(`Koroner BT'de ${[isNum(d.cac) ? 'kalsiyum skoru ' + d.cac + (isNum(d.cacp) ? ' (' + d.cacp + '. persentil)' : '') : null, d.cta === 'Yapıldı' && has('cadrads') ? 'CAD-RADS ' + d.cadrads : null, L('anom').length ? 'koroner anomali: ' + J(L('anom').map(low)) : null].filter(Boolean).join(', ')}.`);
+  // Laboratuvar
+  if (on('lab')) { const labs = [['kreat', 'kreatinin', 'mg/dL'], ['k', 'potasyum', 'mmol/L'], ['na', 'sodyum', 'mmol/L'], ['hb', 'hemoglobin', 'g/dL'], ['hct', 'hematokrit', '%'], ['ferritin', 'ferritin', 'ng/mL'], ['tsat', 'transferrin satürasyonu', '%'], ['tk', 'total kolesterol', 'mg/dL'], ['ldl', 'LDL-K', 'mg/dL'], ['hdl', 'HDL-K', 'mg/dL'], ['tg', 'trigliserid', 'mg/dL'], ['hba1c', 'HbA1c', '%'], ['ntpro', 'NT-proBNP', 'ng/L'], ['trop', 'hs-troponin', 'ng/L'], ['ck', 'CK', 'U/L'], ['tsh', 'TSH', 'mIU/L'], ['alt', 'ALT', 'U/L'], ['vitd', '25-OH D vitamini', 'ng/mL'], ['b12', 'B12', 'pg/mL'], ['folat', 'folat', 'ng/mL'], ['mg', 'magnezyum', 'mg/dL']].filter(([k]) => isNum(d[k]));
+    if (labs.length) { const ab = labs.filter(([k]) => { const r = refState(k, d[k], ctx); return r && r.s; }); const nm = labs.filter((x) => !ab.includes(x));
+      const dt = has('labtarih') ? ` (${fmtDate(d.labtarih)})` : ''; const eg = C('egfrc');
+      S2.push(`Laboratuvarda${dt} ${ab.length ? 'normal dışı değerler ' + J(ab.map(([k, l, u]) => F(k, u, l))) : 'normal dışı değer yok'}${nm.length ? '; ' + J(nm.map(([, l]) => l)) + ' normal sınırlarda' : ''}${eg ? ' (' + trn(eg.v) + ')' : ''}${has('lzaman') ? '; örnek ' + low(d.lzaman) + ' alındı' : ''}${has('slabnot') ? ' (' + d.slabnot + ')' : ''}.`); } }
+  // vücut kompozisyonu
+  if (on('vk') && (isNum(d.kaskg) || isNum(d.faz))) { const ff = C('ffmi'); S2.push(`Vücut kompozisyonunda${has('vkcihaz') ? ' (' + low(d.vkcihaz).replace(/, /, ' ') + ')' : ''} ${[N('kaskg', 'kg') && 'kas kütlesi ' + N('kaskg', 'kg'), ff ? low(trn(ff.v)) : null, N('faz', '°') && 'faz açısı ' + trn(d.faz) + '°', N('visyag') && 'visseral yağ derecesi ' + d.visyag, N('bel', 'cm') && 'bel çevresi ' + N('bel', 'cm')].filter(Boolean).join(', ')}.`); }
+  // mikrobiyota
+  if (on('mikro') && (isNum(d.shannon) || has('mikronot'))) S2.push(`Bağırsak mikrobiyotası analizinde${has('myon') ? ' (' + low(d.myon) + ')' : ''} ${[F('shannon', '', 'Shannon indeksi'), F('fb', '', 'Firmicutes/Bacteroidetes oranı'), F('veil', '%', 'Veillonella'), F('akk', '%', 'Akkermansia'), F('faec', '%', 'Faecalibacterium')].filter(Boolean).join(', ')}${has('mikronot') ? ' (' + d.mikronot + ')' : ''}.`);
+  // tanı ve karar
+  const t = []; if (L('tani').length) t.push(`Tanı: ${J(L('tani').map(low))}`); else if ((d.tani || []).length) t.push('Tanı: ' + low(d.tani[0]));
+  if (has('karar')) t.push(`spora katılım kararı (EK-3) ${low(d.karar)}`);
+  const pl = []; if (on('egz') && has('gunp')) pl.push(`haftada ${d.gunp} gün`); if (on('egz') && has('bolge')) pl.push(`ağırlıklı ${d.bolge}`); if (on('egz') && isNum(d.ust)) pl.push(`üst sınır nabız ${d.ust}/dk`); if (on('egz') && d.kas && d.kas !== 'Şimdilik yok') pl.push(`${low(d.kas)} kas güçlendirme`); if (on('egz') && L('ozel').length) pl.push(J(L('ozel').map(low)));
+  if (pl.length) t.push(`${pl.join(', ')} önerildi`); if (L('istek').length) t.push(`istenen tetkikler: ${J(L('istek'))}`); if (L('refs').length) t.push(`yönlendirme: ${J(L('refs').map(low))}`);
+  if (has('rapor')) t.push(`rapor kontrol süresi ${d.rapor}`); if (has('kontrol')) t.push(d.kontrol === 'Gerekmiyor' ? 'kontrol gerekmiyor' : `sonraki kontrol ${d.kontrol} sonra`);
+  if (t.length) S2.push(t.join('; ') + '.'); if (has('not')) S2.push(String(d.not).trim().replace(/([^.])$/, '$1.'));
+  return S2.join(' ').replace(/\s+/g, ' ').replace(/ ,/g, ',').replace(/\.\./g, '.');
+}
+const ozCap = (t) => (t ? (t[0] === 'i' ? 'İ' : t[0].toLocaleUpperCase('tr-TR')) + t.slice(1) : t);
 function reportName(ext) { const p = S.pts.get(S.cur); const rec = S.view === 'report' ? recsOf(p, S.clinic).find((r) => r.id === S.rv) : S.wiz.rec; return `RANKARA_${fileNo(p, S.clinic)}_${rec.f}_${rec.d.tarih || todayISO()}.${ext}`; }
 async function saveHTMLReport() {
   const node = $('#rpt'); if (!node) return; const css = [...document.querySelectorAll('style')].map((x) => x.textContent).join('\n');
@@ -1939,7 +2083,7 @@ function vForms() {
 /* ---------- AYARLAR ---------- */
 function vSettings() {
   return `${topbar()}<div class="stack">
-    <div class="card stack"><div class="small muted">RANKARA sürüm 1.5 · 28.11.2026</div><h2>Veri güvenliği</h2><p>Kayıtlar ve fotoğraflar bu iPad’de, PIN’inizden türetilen anahtarla <b>AES-256</b> ile şifrelenir (PBKDF2, ${ITER.toLocaleString('tr-TR')} tur). Kayıtlar yalnızca bu iPad’de saklanır; uygulama internete ya da başka bir sisteme veri göndermez. Dışarıdan alabildiği tek şey hastanın ön anket dosyasıdır; bu dosya yalnızca bu iPad’deki özel anahtarla açılır, hasta eşleştirmesi yapılır ve siz önizleyip onaylamadan kaydedilmez. Cihaz dışına çıkabilen tek dosya, sizin aldığınız şifreli yedektir.</p>
+    <div class="card stack"><div class="small muted">RANKARA sürüm 1.6 · 28.11.2026</div><h2>Veri güvenliği</h2><p>Kayıtlar ve fotoğraflar bu iPad’de, PIN’inizden türetilen anahtarla <b>AES-256</b> ile şifrelenir (PBKDF2, ${ITER.toLocaleString('tr-TR')} tur). Kayıtlar yalnızca bu iPad’de saklanır; uygulama internete ya da başka bir sisteme veri göndermez. Dışarıdan alabildiği tek şey hastanın ön anket dosyasıdır; bu dosya yalnızca bu iPad’deki özel anahtarla açılır, hasta eşleştirmesi yapılır ve siz önizleyip onaylamadan kaydedilmez. Cihaz dışına çıkabilen tek dosya, sizin aldığınız şifreli yedektir.</p>
       <p>Ad soyad ve T.C. kimlik numarası tutulmaz. Fotoğraf yalnızca açık rıza işaretlenmiş hastada çekilir. 5 dakika işlem yapılmazsa uygulama kilitlenir.</p><p class="muted small">PIN unutulursa kayıtlar açılamaz. Düzenli yedek alın.</p></div>
     <div class="card stack"><h3>Tüm kayıtları sil</h3><p class="muted small">Deneme kayıtlarını temizlemek için. Hasta kayıtları, formlar ve fotoğraflar silinir; PIN ve ön anket bağlantısı kalır.</p><div class="row"><button class="btn danger" data-a="wipe">Tüm kayıtları sil</button></div></div>
     <div class="card stack"><h3>Şifreli yedek</h3><p class="muted small">Yedek dosyası da şifrelidir; yalnızca aynı PIN ile açılır. Kaydederken iCloud Drive’ı değil, <b>iPad’imde</b> klasörünü ya da USB belleği seçin.</p><div class="row"><button class="btn pri" data-a="backup" ${S.dl ? '' : 'disabled'}>Yedek al</button><button class="btn" data-a="restore">Yedekten geri yükle</button></div></div>
@@ -2040,6 +2184,7 @@ document.addEventListener('click', async (e) => {
     case 'restore': case 'restoreSetup': $('#restoreFile').click(); break;
     case 'backup': await doBackup(); break;
     case 'docx': await saveDOCX(); break;
+    case 'ozetdocx': await saveSummaryDOCX(); break;
     case 'wipe': confirmBox('Bu iPad’deki TÜM hasta kayıtları, formlar ve fotoğraflar kalıcı olarak silinsin mi? Dosya numaraları 0001’den yeniden başlar. PIN ve ön anket bağlantısı değişmez. Bu işlem geri alınamaz; saklamak istediğiniz kayıt varsa önce yedek alın.', 'Hepsini sil', async () => { try { const snap = await S.db.collection(`data/users/${S.uid}`).get(); for (const d of snap.docs) { if (d.id.startsWith('p_') || d.id.startsWith('f_') || d.id === 'seq' || d.id === 'stats') await S.db.doc(P_(d.id)).delete(); } await loadAll(); toast('Tüm kayıtlar silindi'); go('home'); } catch (e) { toast('Silme tamamlanamadı'); } }); break;
     case 'csv': await doCSV(); break;
     case 'q': S.q = (S.q + v).slice(0, 4); render(); break;

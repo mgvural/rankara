@@ -19,3 +19,8 @@
 
 - Görüntüleme Laboratuvarı'na **İleri EKO** modülü (dosya no IE-0001…): hekimin "İleri Ekokardiyografi Formu"ndaki tüm bölümler (sol ventrikül, diyastol ve sol atriyum, sağ kalp, pulmoner basınç, kapaklar ve aort, sonuç ve öneri).
 - Formdaki referanslara göre kırmızı işaretleme (cinsiyete göre); BSA, RWT, LV kütle indeksi, geometri önerisi, E/A, ortalama E/e′, sPAP ve TAPSE/sPAP kendiliğinden hesaplanır.
+
+## Sürüm 1.6 (28.11.2026)
+
+- Tüm polikliniklerde ve Görüntüleme Laboratuvarı modüllerinde raporun yanında **Özet (Word)**: kayıttaki tüm bölümler bir hekime yazılmış gibi tek paragrafta. Spor kardiyolojisi ilk değerlendirmesi için ayrıntılı anlatım; diğer formlarda bölüm bölüm özet. Rapor ekranında özetin önizlemesi var.
+- Yazım: "Nabzı saatle izleme".
