@@ -718,7 +718,7 @@ const ILEKO_FORM = { k: 'ileko', ad: 'İleri ekokardiyografi', tur: 'Tetkik rapo
   { ad: 'Çekim bilgileri', f: [date('tarih', 'Tarih'), text('ieistem', 'İstem yapan hekim', { line: true, opt: true, ph: 'Hekimin adı' }),
     single('ieendik', 'Endikasyon', ['Kardiyo-onkoloji', 'Spor kardiyolojisi', 'Pulmoner damar hastalığı', 'Diğer']), text('ieendikdig', 'Diğer endikasyon', { line: true, ph: 'Endikasyonu yazın', when: (d) => d.ieendik === 'Diğer' }),
     num('boy', 'Boy', { unit: 'cm', min: 100, max: 230, start: 170, steps: [1, 5] }), num('kilo', 'Kilo', { unit: 'kg', min: 25, max: 220, start: 70, steps: [0.5, 5], dec: 1 }), calc('iebsa', 'Vücut yüzey alanı (BSA)', C_IE_BSA),
-    num('ietas', 'Sistolik TA', { unit: 'mmHg', min: 60, max: 260, start: 120, steps: [1, 10], opt: true }), num('ietad', 'Diyastolik TA', { unit: 'mmHg', min: 30, max: 160, start: 80, steps: [1, 10], opt: true }), num('ienabiz', 'Nabız', { unit: '/dk', min: 25, max: 220, start: 70, steps: [1, 10], opt: true }),
+    num('ta_s', 'Sistolik TA', { unit: 'mmHg', min: 60, max: 260, start: 120, steps: [1, 10], opt: true }), num('ta_d', 'Diyastolik TA', { unit: 'mmHg', min: 30, max: 160, start: 80, steps: [1, 10], opt: true }), num('nabiz', 'Nabız', { unit: '/dk', min: 25, max: 220, start: 70, steps: [1, 10], opt: true }),
     single('ieritim', 'Ritim', ['Sinüs', 'AF', 'Diğer']), single('iecihaz', 'Cihaz / GLS yazılımı', ['Vivid / EchoPAC', 'Epiq / QLAB', 'TOMTEC', 'Diğer'], { opt: true }), single('iekalite', 'Görüntü kalitesi', ['İyi', 'Orta', 'Kötü'])] },
   { ad: 'Sol ventrikül', f: [{ t: 'head', label: 'Referans: ASE/EACVI 2015 (E: erkek, K: kadın)' },
     ien('ielvidd', 'LVİDd', 'mm', 'E 42–58 · K 38–52', { min: 20, max: 90, start: 48, steps: [1, 5] }), ien('ielvids', 'LVİDs', 'mm', 'E 25–40 · K 22–35', { min: 10, max: 80, start: 32, steps: [1, 5] }),
@@ -1185,6 +1185,7 @@ const COLS_BASE = [
   S_('skb', 'ta_s'), S_('dkb', 'ta_d'), S_('nabiz', 'nabiz'), S_('kreatinin', 'kreat'), FN('egfr', 'eGFR (CKD-EPI 2021)', (P) => egfrOf(nv(fv(P, 'kreat')), P.age, P.p.sex), { birim: 'mL/dk/1,73 m²' }),
   S_('potasyum', 'k'), S_('sodyum', 'na'), S_('hb', 'hb'), S_('ferritin', 'ferritin'), S_('total_kol', 'tk'), S_('ldl', 'ldl'), S_('hdl', 'hdl'), S_('hba1c', 'hba1c'), S_('ntprobnp', 'ntpro'), S_('tsh', 'tsh'),
   FN('kayit_sayisi', 'Kayıt sayısı', (P) => P.recs.length), FN('izlem_gun', 'İzlem süresi', (P) => { const a = P.recs[0], b = P.recs[P.recs.length - 1]; return a && b && a.d.tarih && b.d.tarih ? Math.round((Date.parse(b.d.tarih) - Date.parse(a.d.tarih)) / 864e5) : null; }, { birim: 'gün' })];
+COLS_BASE.forEach((c) => { if (c.src) c.need = c.src; }); COLS_BASE.find((c) => c.k === 'vki').need = 'boy'; COLS_BASE.find((c) => c.k === 'egfr').need = 'kreat';
 const anyOf = (src, vals, ad) => ({ k: null, ad, tip: 'kat', kod: { 0: 'Yok', 1: 'Var' }, fn: (P) => { const v = fv(P, src); return Array.isArray(v) ? (v.some((x) => vals.some((y) => x.startsWith(y))) ? 1 : 0) : null; } });
 const COLS_MOD = {
   genel: [HAS('ht', 'rf', 'Hipertansiyon', 'Hipertansiyon'), HAS('dm', 'rf', 'Diyabet', 'Diyabet'), HAS('dlp', 'rf', 'Dislipidemi', 'Dislipidemi'), HAS('sigara', 'rf', 'Sigara', 'Sigara'), HAS('kbh', 'rf', 'Kronik böbrek hastalığı', 'Kronik böbrek hastalığı'),
@@ -1227,7 +1228,7 @@ const COLS_MOD = {
 };
 const MODK = { genel: 'GK', ph: 'PD', ko: 'KO', spor: 'SK', kmp: 'KM', tee: 'TE', ileko: 'IE' };
 function colsOf(scope) { const extra = scope === 'all' ? [...CLINICS.map((c) => ({ k: 'mod_' + MODK[c.k].toLowerCase(), ad: c.ad + ' kaydı', tip: 'kat', kod: { 0: 'Hayır', 1: 'Evet' }, fn: (P) => (P.p.clinics || []).includes(c.k) ? 1 : 0 })), COLS_MOD.spor[0]] : COLS_MOD[scope] || [];
-  return [...COLS_BASE, ...extra].map((c) => { const fd = c.src || c.opt || c.yn ? fdef(scope === 'all' ? 'genel' : scope, c.src || c.opt || c.yn) : null; const ad = c.ad || (fd ? fd.label.replace(/ \(.*\)$/, '') : c.k); let kod = c.kod;
+  return [...COLS_BASE.filter((c) => scope === 'all' || !c.need || (FIDX[scope] || {})[c.need]), ...extra].map((c) => { const fd = c.src || c.opt || c.yn ? fdef(scope === 'all' ? 'genel' : scope, c.src || c.opt || c.yn) : null; const ad = c.ad || (fd ? fd.label.replace(/ \(.*\)$/, '') : c.k); let kod = c.kod;
     if (c.opt && fd && fd.opts) { const base = c.zero ? 0 : 1; kod = Object.fromEntries(fd.opts.map((o, i) => [i + base, o])); }
     return { ...c, ad, birim: c.birim ?? (fd && fd.unit) ?? '', kod }; }); }
 function valOf(c, P) {
@@ -1570,7 +1571,7 @@ function render() {
 }
 function topbar(right = '', sub = 'Poliklinik anamnez ve izlem') {
   const noBack = ['home', 'lock', 'setup', 'loading', 'nodb', 'wiz'].includes(S.view);
-  return `<div class="topbar"><div class="brand">${noBack ? '' : '<button class="btn backbtn" data-a="back" aria-label="Geri">‹ Geri</button><button class="btn backbtn homebtn" data-a="home" aria-label="Ana ekran"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h5v-6h4v6h5V10"/></svg></button>'}<div class="logo" aria-hidden="true">${LOGO}</div><div><h1 class="wordmark">RAN<span>KARA</span><b class="verbadge">v1.8</b></h1><small>${esc(sub)}</small></div></div><div class="row">${right}</div></div>`;
+  return `<div class="topbar"><div class="brand">${noBack ? '' : '<button class="btn backbtn" data-a="back" aria-label="Geri">‹ Geri</button><button class="btn backbtn homebtn" data-a="home" aria-label="Ana ekran"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h5v-6h4v6h5V10"/></svg></button>'}<div class="logo" aria-hidden="true">${LOGO}</div><div><h1 class="wordmark">RAN<span>KARA</span><b class="verbadge">v1.9</b></h1><small>${esc(sub)}</small></div></div><div class="row">${right}</div></div>`;
 }
 const LOGO = `<svg viewBox="0 0 64 64"><rect width="64" height="64" rx="15" fill="#E8711A"/><path d="M32 51 L14.5 33.5 C8.5 27.5 9.5 17.5 17 14.6 C22.6 12.5 28.4 14.6 32 19.6 C35.6 14.6 41.4 12.5 47 14.6 C54.5 17.5 55.5 27.5 49.5 33.5 Z" fill="none" stroke="#FFFFFF" stroke-width="4" stroke-linejoin="round"/><path d="M5 34 H20.5 L24.5 27 L29.5 42.5 L35 18.5 L39.5 34 H59" fill="none" stroke="#E8711A" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 34 H20.5 L24.5 27 L29.5 42.5 L35 18.5 L39.5 34 H59" fill="none" stroke="#13263A" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 const ICONSVG = (c) => `<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${c.icon}</svg>`;
@@ -1931,14 +1932,14 @@ const OZ_LBL = { 'Haftada kaç gün antrenman yapıyor?': ['haftalık antrenman 
   'Haftada kaç dakika direnç egzersizi yapıyor?': ['haftalık direnç egzersizi', ''], 'Kaç yıl sigara içti?': ['sigara süresi', ''], 'Günde kaç paket?': ['günlük paket', ''], 'Hangi yıl bıraktı?': ['bırakma yılı', ''],
   'Günde kaç fincan kahve / çay?': ['günlük kahve/çay (fincan)', ''], 'Gece ortalama uyku süresi': ['gece uyku süresi', ''] };
 const ozL = (f) => OZ_LBL[f.label];
-const OZ_PAIRS = [['ta_s', 'ta_d', 'TA (sağ kol)'], ['ietas', 'ietad', 'TA']];
-const ozLow = (t) => { t = String(t); return /^[A-ZÇĞİÖŞÜ][a-zçğıöşü]/.test(t) ? (t[0] === 'İ' ? 'i' : t[0] === 'I' ? 'ı' : t[0].toLocaleLowerCase('tr-TR')) + t.slice(1) : t; };
-const ozLabel = (f) => (ozL(f) ? ozL(f)[0] : ozLow(String(f.label).replace(/\?$/, '').replace(/\s*\((isteğe bağlı|farklıysa)\)/, '')));
-const ozNum = (v, unit) => (unit === '%' ? '%' + trn(v) : trn(v) + (unit ? ' ' + unit : ''));
+const OZ_PAIRS = [['ta_s', 'ta_d']];
+const ozLow = (t) => { t = String(t); return /^[A-ZÇĞİÖŞÜ][a-zçğıöşü]/.test(t) && !/^\S*[A-ZÇĞİÖŞÜ0-9]/.test(t.slice(1)) ? (t[0] === 'İ' ? 'i' : t[0] === 'I' ? 'ı' : t[0].toLocaleLowerCase('tr-TR')) + t.slice(1) : t; };
+const ozLabel = (f) => (ozL(f) ? ozL(f)[0] : ozLow(String(f.label).replace(/\?$/, '').replace(/\s*\((isteğe bağlı|farklıysa|[^()]*için[^()]*)\)/, '')));
+const ozNum = (v, unit) => (unit === '%' ? '%' + trn(v) : trn(v) + (unit ? (unit[0] === '/' ? '' : ' ') + unit : ''));
 const ozJoin = (a) => (a.length < 2 ? a.join('') : a.slice(0, -1).join(', ') + ' ve ' + a[a.length - 1]);
 function ozPhrase(fl, d, ctx) {
   const v = d[fl.k]; const lb = ozLabel(fl);
-  if (fl.t === 'calc') { const r = fl.fn(ctx); if (!r || !lb || /geçerlidir|girilmeden|gerekir/.test(r.v)) return null; const vv = trn(r.v); return vv.toLocaleLowerCase('tr-TR').startsWith(String(lb).toLocaleLowerCase('tr-TR').split(' ')[0]) ? vv : `${lb} ${vv}`; }
+  if (fl.t === 'calc') { const r = fl.fn(ctx); if (!r || !lb || /geçerlidir|girilmeden|gerekir|gerekli|eksik veri|veri eksik/.test(r.v)) return null; const vv = trn(r.v); const lw = String(lb).toLocaleLowerCase('tr-TR').split(' '); const vl = vv.toLocaleLowerCase('tr-TR'); return vl.startsWith(lw[0]) || vl.includes(lw[lw.length - 1]) ? ozLow(vv) : `${lb} ${ozLow(vv)}`; }
   if (v == null || v === '' || (Array.isArray(v) && !v.length) || lb == null) return null;
   switch (fl.t) {
     case 'num': { const rs = refState(fl.k, v, ctx); return `${lb} ${ozNum(v, fl.unit || (ozL(fl) || [])[1] || '')}${rs && rs.s ? (rs.s > 0 ? ' (normalin üstünde)' : ' (normalin altında)') : ''}`; }
@@ -1961,7 +1962,7 @@ function summaryText(p, ck, rec) {
     if (st.when && !st.when(d, ctx)) continue; if (st.seg && (d.skip || {})[st.seg]) continue;
     const fields = st.f.flatMap((x) => (x.t === 'view' ? (vis(x, ctx) ? x.f : []) : [x])).filter((x) => x.t !== 'head' && x.t !== 'date' && x.t !== 'labocr' && vis(x, ctx));
     const used = new Set(); const parts = [];
-    for (const [a, b, l] of OZ_PAIRS) if (fields.some((x) => x.k === a) && isNum(d[a]) && isNum(d[b])) { parts.push(`${l} ${d[a]}/${d[b]} mmHg`); used.add(a); used.add(b); }
+    for (const [a, b] of OZ_PAIRS) { const fa = fields.find((x) => x.k === a); const l = fa && /sağ kol/.test(fa.label) ? 'TA (sağ kol)' : 'TA'; if (fa && isNum(d[a]) && isNum(d[b])) { parts.push(`${l} ${d[a]}/${d[b]} mmHg`); used.add(a); used.add(b); } }
     for (const fl of fields) { if (used.has(fl.k) || OZ_SKIP.has(fl.k)) continue; const ph = ozPhrase(fl, d, ctx); if (ph) parts.push(ph); }
     if (st.f.some((x) => x.t === 'scales') && d.sc) { const sc = SCALES.filter((s) => d.sc[s.k] != null).map((s) => `${s.ad} ${d.sc[s.k]}${s.unit ? ' ' + s.unit : ' puan'}`); if (sc.length) parts.push('ölçekler: ' + sc.join(', ')); }
     if (!parts.length) continue;
@@ -2103,7 +2104,7 @@ function vForms() {
 /* ---------- AYARLAR ---------- */
 function vSettings() {
   return `${topbar()}<div class="stack">
-    <div class="card stack"><div class="small muted">RANKARA sürüm 1.8 · 28.11.2026</div><h2>Veri güvenliği</h2><p>Kayıtlar ve fotoğraflar bu iPad’de, PIN’inizden türetilen anahtarla <b>AES-256</b> ile şifrelenir (PBKDF2, ${ITER.toLocaleString('tr-TR')} tur). Kayıtlar yalnızca bu iPad’de saklanır; uygulama internete ya da başka bir sisteme veri göndermez. Dışarıdan alabildiği tek şey hastanın ön anket dosyasıdır; bu dosya yalnızca bu iPad’deki özel anahtarla açılır, hasta eşleştirmesi yapılır ve siz önizleyip onaylamadan kaydedilmez. Cihaz dışına çıkabilen tek dosya, sizin aldığınız şifreli yedektir.</p>
+    <div class="card stack"><div class="small muted">RANKARA sürüm 1.9 · 28.11.2026</div><h2>Veri güvenliği</h2><p>Kayıtlar ve fotoğraflar bu iPad’de, PIN’inizden türetilen anahtarla <b>AES-256</b> ile şifrelenir (PBKDF2, ${ITER.toLocaleString('tr-TR')} tur). Kayıtlar yalnızca bu iPad’de saklanır; uygulama internete ya da başka bir sisteme veri göndermez. Dışarıdan alabildiği tek şey hastanın ön anket dosyasıdır; bu dosya yalnızca bu iPad’deki özel anahtarla açılır, hasta eşleştirmesi yapılır ve siz önizleyip onaylamadan kaydedilmez. Cihaz dışına çıkabilen tek dosya, sizin aldığınız şifreli yedektir.</p>
       <p>Ad soyad ve T.C. kimlik numarası tutulmaz. Fotoğraf yalnızca açık rıza işaretlenmiş hastada çekilir. 5 dakika işlem yapılmazsa uygulama kilitlenir.</p><p class="muted small">PIN unutulursa kayıtlar açılamaz. Düzenli yedek alın.</p></div>
     <div class="card stack"><h3>Tüm kayıtları sil</h3><p class="muted small">Deneme kayıtlarını temizlemek için. Hasta kayıtları, formlar ve fotoğraflar silinir; PIN ve ön anket bağlantısı kalır.</p><div class="row"><button class="btn danger" data-a="wipe">Tüm kayıtları sil</button></div></div>
     <div class="card stack"><h3>Şifreli yedek</h3><p class="muted small">Yedek dosyası da şifrelidir; yalnızca aynı PIN ile açılır. Kaydederken iCloud Drive’ı değil, <b>iPad’imde</b> klasörünü ya da USB belleği seçin.</p><div class="row"><button class="btn pri" data-a="backup" ${S.dl ? '' : 'disabled'}>Yedek al</button><button class="btn" data-a="restore">Yedekten geri yükle</button></div></div>
@@ -2119,7 +2120,7 @@ async function doRestore(file) {
     const fromSetup = S.view === 'setup';
     if (fromSetup) { await S.db.doc(P_('vault')).set(j.meta); S.meta = j.meta; } else if (j.meta.salt !== S.meta.salt) { toast('Bu yedek farklı bir PIN ile oluşturulmuş'); return; }
     for (const x of j.docs) { const { id, ...box } = x; if (/^(p_|f_|seq$|stats$|obkey$)/.test(id)) await S.db.doc(P_(id)).set(box); }
-    if (fromSetup) { toast('Yedek yüklendi; yedeğin PIN’iyle açın'); go('lock'); } else { await loadAll(); try { await migrateNos(); } catch (e) { } toast('Yedek geri yüklendi'); go('home'); }
+    if (fromSetup) { toast('Yedek yüklendi; yedeğin PIN’iyle açın'); go('lock'); } else { await loadAll(); try { await migrateNos(); } catch (e) { } try { await migrateIE(); } catch (e) { } toast('Yedek geri yüklendi'); go('home'); }
   } catch (e) { toast('Yedek dosyası okunamadı'); }
 }
 async function doCSV() {
@@ -2170,11 +2171,16 @@ async function pinOk() {
     } else {
       const key = await deriveKey(S.pin, S.meta.salt, S.meta.iter || ITER);
       try { await unseal(key, S.meta.check); } catch (e) { S.fails++; S.pin = ''; S.busy = false; S.err = S.fails >= 5 ? 'Çok sayıda hatalı deneme. 30 saniye bekleyin.' : 'PIN hatalı.'; if (S.fails >= 5) { S.busy = true; setTimeout(() => { S.busy = false; S.fails = 0; S.err = ''; render(); }, 30000); } render(); return; }
-      S.key = key; S.fails = 0; S.pin = ''; await loadAll(); try { await migrateNos(); } catch (e) { } S.busy = false; armLock(); go('home');
+      S.key = key; S.fails = 0; S.pin = ''; await loadAll(); try { await migrateNos(); } catch (e) { } try { await migrateIE(); } catch (e) { } S.busy = false; armLock(); go('home');
     }
   } catch (e) { S.busy = false; S.err = 'İşlem tamamlanamadı. Bağlantıyı kontrol edip tekrar deneyin.'; render(); }
 }
 function openWizard(rec, step = 0, edit = false) { S.wiz = { rec, step, saved: false, edit }; go('wiz'); }
+/* İleri EKO 1.5 kayıtlarında TA ve nabız ietas/ietad/ienabiz anahtarlarıyla tutuluyordu; ortak anahtarlara taşınır */
+async function migrateIE() { const MAP = { ietas: 'ta_s', ietad: 'ta_d', ienabiz: 'nabiz' };
+  for (const p of [...S.pts.values()]) { const recs = ((p.mod || {}).ileko || {}).recs || []; if (!recs.some((r) => Object.keys(MAP).some((k) => k in r.d))) continue;
+    const c = JSON.parse(JSON.stringify(p)); for (const r of c.mod.ileko.recs) for (const [o, n] of Object.entries(MAP)) if (o in r.d) { if (r.d[n] == null) r.d[n] = r.d[o]; delete r.d[o]; }
+    await saveP(c); S.pts.set(c.id, c); } }
 async function wizSave() {
   const p = S.pts.get(S.cur); const ck = S.clinic; const rec = JSON.parse(JSON.stringify(S.wiz.rec));
   const copy = JSON.parse(JSON.stringify(p)); copy.mod = copy.mod || {}; copy.mod[ck] = copy.mod[ck] || { recs: [] };

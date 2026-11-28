@@ -32,3 +32,7 @@
 ## Sürüm 1.8 (28.11.2026)
 
 - Özetin sonunda **ÖNERİLER**: büyük harfle, numaralı, her öneri ayrı satırda. Kaynakları: son adımdaki yeni "Öneriler" kutusu (her satıra bir öneri; ilaç, tetkik, kontrol), işaretlenen istenen tetkikler, yönlendirmeler ve sonraki kontrol. Aynı öneri iki kez yazılmaz.
+
+## Sürüm 1.9 (28.11.2026)
+
+- Toplu test (her poliklinik ve modülde 10 kurgusal hasta) sonrası düzeltmeler: İleri EKO'da TA ve nabız ortak anahtarlarla tutulur (eski kayıtlar açılışta taşınır); veri tablosunda modülde olmayan ortak sütunlar gösterilmez; hekime özette küçük yazım düzeltmeleri (HbA1c, "/dk", tekrar eden hesap adları, eksik veri uyarıları).
