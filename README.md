@@ -14,3 +14,8 @@
 - Ön anket aynı sorulara göre güncellendi; metin cevaplar da kayda ön doldurulur.
 - Yeni hasta ekranında Kaydet'in yanında eksik alanlar yazılıyor.
 - Yedek ve güvenlik ekranında onaylı "Tüm kayıtları sil" (PIN ve ön anket anahtarı kalır).
+
+## Sürüm 1.5 (28.11.2026)
+
+- Görüntüleme Laboratuvarı'na **İleri EKO** modülü (dosya no IE-0001…): hekimin "İleri Ekokardiyografi Formu"ndaki tüm bölümler (sol ventrikül, diyastol ve sol atriyum, sağ kalp, pulmoner basınç, kapaklar ve aort, sonuç ve öneri).
+- Formdaki referanslara göre kırmızı işaretleme (cinsiyete göre); BSA, RWT, LV kütle indeksi, geometri önerisi, E/A, ortalama E/e′, sPAP ve TAPSE/sPAP kendiliğinden hesaplanır.
