@@ -1571,7 +1571,7 @@ function render() {
 }
 function topbar(right = '', sub = 'Poliklinik anamnez ve izlem') {
   const noBack = ['home', 'lock', 'setup', 'loading', 'nodb', 'wiz'].includes(S.view);
-  return `<div class="topbar"><div class="brand">${noBack ? '' : '<button class="btn backbtn" data-a="back" aria-label="Geri">‹ Geri</button><button class="btn backbtn homebtn" data-a="home" aria-label="Ana ekran"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h5v-6h4v6h5V10"/></svg></button>'}<div class="logo" aria-hidden="true">${LOGO}</div><div><h1 class="wordmark">RAN<span>KARA</span><b class="verbadge">v1.9</b></h1><small>${esc(sub)}</small></div></div><div class="row">${right}</div></div>`;
+  return `<div class="topbar"><div class="brand">${noBack ? '' : '<button class="btn backbtn" data-a="back" aria-label="Geri">‹ Geri</button><button class="btn backbtn homebtn" data-a="home" aria-label="Ana ekran"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h5v-6h4v6h5V10"/></svg></button>'}<div class="logo" aria-hidden="true">${LOGO}</div><div><h1 class="wordmark">RAN<span>KARA</span><b class="verbadge">v2.0</b></h1><small>${esc(sub)}</small></div></div><div class="row">${right}</div></div>`;
 }
 const LOGO = `<svg viewBox="0 0 64 64"><rect width="64" height="64" rx="15" fill="#E8711A"/><path d="M32 51 L14.5 33.5 C8.5 27.5 9.5 17.5 17 14.6 C22.6 12.5 28.4 14.6 32 19.6 C35.6 14.6 41.4 12.5 47 14.6 C54.5 17.5 55.5 27.5 49.5 33.5 Z" fill="none" stroke="#FFFFFF" stroke-width="4" stroke-linejoin="round"/><path d="M5 34 H20.5 L24.5 27 L29.5 42.5 L35 18.5 L39.5 34 H59" fill="none" stroke="#E8711A" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 34 H20.5 L24.5 27 L29.5 42.5 L35 18.5 L39.5 34 H59" fill="none" stroke="#13263A" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 const ICONSVG = (c) => `<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${c.icon}</svg>`;
@@ -1682,7 +1682,7 @@ function vPatient() {
     ${obCard(p, c)}
     ${(() => { const lr = lastRec(p, c.k); return lr ? alertsHTML(ctxOf(p, c.k, lr)) : ''; })()}
     ${trendsHTML(p)}
-    <div class="card"><h3 style="margin-bottom:10px">Kayıtlar</h3><div class="list">${recs.length ? recs.slice().reverse().map((r) => { const f = formOf(c.k, r.f); const ctx = ctxOf(p, c.k, r); const fl = flagsOf(p, c.k, r);
+    <div class="card"><div class="row between" style="margin-bottom:10px"><h3 style="margin:0">Kayıtlar</h3>${recs.length ? '<button class="btn sm" data-a="kursozet">Tüm süreç özeti (Word)</button>' : ''}</div><div class="list">${recs.length ? recs.slice().reverse().map((r) => { const f = formOf(c.k, r.f); const ctx = ctxOf(p, c.k, r); const fl = flagsOf(p, c.k, r);
       return `<button class="item" data-a="openrec" data-v="${r.id}"><div class="avatar" style="width:44px;height:44px;font-size:13px">${f.tur.slice(0, 2)}</div><div><div class="t">${fmtDate(r.d.tarih)} · ${f.ad}</div><div class="s">${esc(trn(f.sum ? f.sum(r.d, ctx) : ''))}</div></div><div class="tags">${fl.slice(0, 3).map(([l, t]) => `<span class="pill ${l}">${esc(t)}</span>`).join('')}</div></button>`; }).join('') : '<p class="muted">Henüz kayıt yok. İlk değerlendirmeyle başlayın.</p>'}</div></div>
     <div class="row end"><button class="btn danger" data-a="delp">Hastayı bu poliklinikten çıkar</button></div>
   </div>`;
@@ -1905,6 +1905,7 @@ async function docxBlob(node) {
     else if (el.nodeName === 'TABLE') body += table(el);
     else if (/^H[1-6]$/.test(el.nodeName)) body += para(runs(el, { b: true, col: '1F4E79', sz: 22 }), '<w:keepNext/><w:spacing w:before="160" w:after="60"/>');
     else if (el.classList.contains('sig')) body += para([...el.children].map((c) => runs(c, { sz: 19 })).join('<w:r><w:tab/></w:r>'), `<w:tabs><w:tab w:val="right" w:pos="${W}"/></w:tabs><w:spacing w:before="480" w:after="120"/>`);
+    else if (el.classList.contains('dimg')) { const im = el.querySelector('img'); if (im) body += para(await img(im.src, 620), '<w:keepLines/>'); }
     else if (el.classList.contains('foot')) body += para(runs(el, { sz: 15, col: '5A6D80' }), '<w:spacing w:before="120"/>');
     else if (el.textContent.trim()) body += para(runs(el, {}));
   }
@@ -1954,9 +1955,9 @@ function ozPhrase(fl, d, ctx) {
   return null;
 }
 function summaryText(p, ck, rec) {
-  if (ck === 'spor' && rec.f === 'ilk') return ozetSporIlk(p, ck, rec);
+  if (ck === 'spor' && (rec.f === 'ilk' || rec.f === 'izlem')) return ozetSporIlk(p, ck, rec);
   const c = CL[ck]; const f = formOf(ck, rec.f); const ctx = ctxOf(p, ck, rec); const d = rec.d;
-  const age = ageOf(p); const out = [];
+  const age = p.by && d.tarih ? +String(d.tarih).slice(0, 4) - p.by : ageOf(p); const out = [];
   out.push(`${fileNo(p, ck)} dosya numaralı ${age != null ? age + ' yaşındaki ' : ''}${p.sex === 'K' ? 'kadın' : 'erkek'} hasta, ${fmtDate(d.tarih) || fmtDate(todayISO())} tarihinde ${c.grp === 'lab' ? 'Görüntüleme Laboratuvarında' : c.ad + ' polikliniğinde'} ${ozLow(f.ad)} için görüldü${ck === 'spor' && p.rankara === 'Evet' ? ' ve RANKARA çalışmasına dahildir' : ''}.`);
   for (const st of f.steps) {
     if (st.when && !st.when(d, ctx)) continue; if (st.seg && (d.skip || {})[st.seg]) continue;
@@ -1986,6 +1987,53 @@ function ozOneriler(p, ck, rec) {
 }
 const OZ_SKIP = new Set(['oneriler', 'istek', 'refs', 'kontrol', 'ieoneri', 'iekontrol', 'iekons']);
 
+/* ---------- TÜM SÜREÇ ÖZETİ (Word) ve zaman içindeki değişim grafikleri ---------- */
+const KURS_SPOR = [['vo2', 'Tepe VO₂', 'mL/kg/dk'], ['vt2', 'VT2’de VO₂', 'mL/kg/dk'], ['yuk', 'Haftalık antrenman yükü', 'AU'], ['iyilik', 'İyilik hali toplamı (düşük değer iyi)', ''],
+  ['lvedd', 'LVEDD', 'mm'], ['ivs', 'IVS', 'mm'], ['lvef', 'LVEF', '%'], ['gls', 'LV GLS', '%'], ['lav', 'LA hacmi', 'mL'], ['rvd', 'RV bazal çap', 'mm'],
+  ['ekhr', 'EKG kalp hızı', '/dk'], ['qtc', 'QTc', 'ms'], ['hves', 'Holter VES sayısı', 'adet'], ['ta_s', 'Sistolik TA', 'mmHg'], ['kilo', 'Kilo', 'kg'], ['yag', 'Yağ oranı', '%'],
+  ['hb', 'Hemoglobin', 'g/dL'], ['ferritin', 'Ferritin', 'ng/mL'], ['vitd', '25-OH D vitamini', 'ng/mL'], ['ck', 'CK', 'U/L'], ['trop', 'hs-troponin', 'ng/L']];
+function kursParams(p, ck) { if (ck === 'spor') return KURS_SPOR; const cat = numCatalog(); return TREND_FIRST.filter((k) => k !== 'iyilik' && k !== 'yuk').map((k) => [k, (cat[k] || {}).ad || k, (cat[k] || {}).unit || '']); }
+function chartPNG(ser, title, unit, ref) {
+  const W = 620, H = 210, dpr = 2; const cv = document.createElement('canvas'); cv.width = W * dpr; cv.height = H * dpr; const g = cv.getContext('2d'); g.scale(dpr, dpr);
+  g.fillStyle = '#ffffff'; g.fillRect(0, 0, W, H); const L = 56, Rr = 18, T = 32, Bm = 30;
+  const vs = ser.map((x) => x.v); let mn = Math.min(...vs), mx = Math.max(...vs); const sp0 = (mx - mn) || Math.abs(mx) * 0.1 || 1;
+  if (ref) { if (ref[0] != null && ref[0] >= mn - sp0) mn = Math.min(mn, ref[0]); if (ref[1] != null && ref[1] <= mx + sp0) mx = Math.max(mx, ref[1]); }
+  if (mn === mx) { mn -= 1; mx += 1; } const pad = (mx - mn) * 0.15; mn -= pad; mx += pad; if (vs.every((v) => v >= 0) && mn < 0) mn = 0; if (vs.every((v) => v <= 0) && mx > 0) mx = 0;
+  const raw = (mx - mn) / 4; const mag = 10 ** Math.floor(Math.log10(raw)); const st = [1, 2, 2.5, 5, 10].map((m) => m * mag).find((q) => q >= raw); mn = Math.floor(mn / st + 1e-9) * st; mx = Math.ceil(mx / st - 1e-9) * st; const nt = Math.round((mx - mn) / st);
+  const ts = ser.map((x) => Date.parse(x.date)); const t0 = Math.min(...ts), t1 = Math.max(...ts);
+  const X = (t) => (t1 === t0 ? (L + W - Rr) / 2 : L + 8 + (W - L - Rr - 16) * (t - t0) / (t1 - t0)); const Y = (v) => T + (H - T - Bm) * (1 - (v - mn) / (mx - mn));
+  const dg = Math.max(0, -Math.floor(Math.log10(st) + 1e-9)) + (st % 2.5 === 0 && st < 10 && st !== Math.round(st) ? 1 : 0); const fm = (v) => trn((Math.round(v * 10 ** dg) / 10 ** dg).toFixed(dg)); const F = 'Arial, Helvetica, sans-serif';
+  g.font = `bold 13px ${F}`; g.fillStyle = '#13263A'; g.textAlign = 'left'; g.fillText(title + (unit ? ` (${unit})` : ''), L, 19);
+  if (ref) { const a = Math.max(ref[0] != null ? ref[0] : mn, mn), b = Math.min(ref[1] != null ? ref[1] : mx, mx); if (b > a) { g.fillStyle = 'rgba(30,142,79,0.10)'; g.fillRect(L, Y(b), W - L - Rr, Y(a) - Y(b)); g.font = `10px ${F}`; g.fillStyle = '#1E8E4F'; g.textAlign = 'right'; g.fillText('referans aralığı', W - Rr - 4, Y(b) + 12); } }
+  g.font = `11px ${F}`; g.lineWidth = 1;
+  for (let i = 0; i <= nt; i++) { const v = mn + st * i; const y = Y(v); g.strokeStyle = '#E3E9EF'; g.beginPath(); g.moveTo(L, y); g.lineTo(W - Rr, y); g.stroke(); g.fillStyle = '#5A6D80'; g.textAlign = 'right'; g.fillText(fm(v), L - 6, y + 4); }
+  g.strokeStyle = '#E8711A'; g.lineWidth = 2.4; g.beginPath(); ser.forEach((x, i) => { const px = X(ts[i]), py = Y(x.v); if (i) g.lineTo(px, py); else g.moveTo(px, py); }); g.stroke();
+  ser.forEach((x, i) => { const px = X(ts[i]), py = Y(x.v); const out = ref && ((ref[0] != null && x.v < ref[0]) || (ref[1] != null && x.v > ref[1]));
+    g.fillStyle = out ? '#C0392B' : '#1F4E79'; g.beginPath(); g.arc(px, py, 3.8, 0, 7); g.fill(); g.font = `bold 10.5px ${F}`; g.textAlign = 'center'; g.fillStyle = out ? '#C0392B' : '#13263A'; g.fillText(trn(x.v), px, py - 8); });
+  g.font = `10.5px ${F}`; g.fillStyle = '#5A6D80'; g.textAlign = 'center'; const every = Math.ceil(ser.length / 10);
+  ser.forEach((x, i) => { if (i % every === 0 || i === ser.length - 1) g.fillText(x.date.slice(5, 7) + '.' + x.date.slice(2, 4), X(ts[i]), H - Bm + 18); });
+  return cv.toDataURL('image/png');
+}
+async function saveCourseDOCX() {
+  if (!S.dl) { toast('Bu görünümde dosya kaydı kullanılamıyor'); return; }
+  const p = S.pts.get(S.cur); const ck = S.clinic; const c = CL[ck]; const recs = recsOf(p, ck).slice().sort((a, b) => String(a.d.tarih || '').localeCompare(String(b.d.tarih || ''))); if (!recs.length) return;
+  toast('Özet ve grafikler hazırlanıyor…');
+  const first = recs[0], last = recs[recs.length - 1]; const isIlk = !!formOf(ck, first.f).once;
+  const inl = (r) => { if (r === last) return ''; const d = r.d; const o = []; String(d.oneriler || '').split(/\n+/).map((x) => x.replace(/^\s*(\d+\s*[-.)]|[-•*])\s*/, '').trim()).filter(Boolean).forEach((x) => o.push(ozLow(x)));
+    const IST = { 'Stres EKO': 'stres ekokardiyografi', 'Holter': 'ritim Holter', 'Koroner BT anjiyografi': 'koroner BT anjiyografi', 'KMR (Ankara EAH)': 'kardiyak MRG', 'Genetik danışmanlık': 'genetik danışmanlık', 'Ambulatuvar kan basıncı': 'ayaktan kan basıncı Holteri' };
+    (d.istek || []).forEach((x) => o.push(IST[x] || ozLow(x))); (d.refs || []).forEach((x) => o.push(ozLow(x) + ' birimine yönlendirme')); if (d.kontrol && d.kontrol !== 'Gerekmiyor') o.push(d.kontrol + ' sonra kontrol');
+    const seen = new Set(); const u = o.filter((x) => { const k = x.toLocaleLowerCase('tr-TR'); if (seen.has(k)) return false; seen.add(k); return true; }); return u.length ? ' Öneriler: ' + u.join('; ') + '.' : ''; };
+  const parts = []; parts.push(`<h4>${isIlk ? 'İlk değerlendirme' : 'Kayıtlar'}</h4><p>${esc(summaryText(p, ck, first) + (recs.length > 1 ? inl(first) : ''))}</p>`);
+    const rest = recs.slice(1); if (rest.length) parts.push(`<h4>İzlem (${rest.length} kayıt)</h4>` + rest.map((r) => `<p>${esc((ck === 'spor' ? summaryText(p, ck, r) : fmtDate(r.d.tarih) + ' · ' + formOf(ck, r.f).ad + ': ' + summaryText(p, ck, r).replace(/^[^.]*görüldü[^.]*\.\s*/, '')) + inl(r))}</p>`).join(''));
+  const on = ozOneriler(p, ck, last); if (on.length) parts.push(`<p><b>ÖNERİLER (${fmtDate(last.d.tarih)})</b></p>` + on.map((x, i) => `<p>${i + 1}- ${esc(x)}</p>`).join(''));
+  const charts = []; for (const [k, ad, u] of kursParams(p, ck)) { const ser = seriesOf(p, k); if (ser.length < 2) continue; const rf = refOf(k, { p, d: {} }); charts.push(`<div class="dimg"><img src="${chartPNG(ser, ad, u, rf && rf[2] !== 'x' ? rf : null)}" alt=""></div>`); }
+  if (charts.length) parts.push(`<h4>Önemli parametrelerin zaman içindeki değişimi</h4><p>Turuncu çizgi ölçümlerin seyrini, yeşil alan varsa referans aralığını gösterir; kırmızı noktalar referans dışı değerlerdir.</p>` + charts.join(''));
+  const host = document.createElement('div'); host.style.cssText = 'position:absolute;left:-9999px;top:0;width:700px';
+  host.innerHTML = `<div class="ph"><div><div><b>Atatürk Sanatoryum Eğitim ve Araştırma Hastanesi</b><br>${esc(c.grp === 'lab' ? GR[c.grp].ad + ' · ' + c.ad : c.ad + ' Polikliniği')} · Tüm süreç özeti<br>Dosya no: <b>${esc(fileNo(p, ck))}</b> · ${p.sex === 'K' ? 'Kadın' : 'Erkek'}, ${ageOf(p) ?? '?'} yaş · ${fmtDate(first.d.tarih)} – ${fmtDate(last.d.tarih)} · ${recs.length} kayıt</div></div></div>${parts.join('')}<div class="sig"><div>Hekim adı soyadı, imza</div><div>Tarih: ${fmtDate(todayISO())}</div></div><div class="foot">RANKARA kayıtlarından oluşturulmuştur. Ad ve kimlik numarası içermez; hasta dosya numarasıyla tanımlanır.</div>`;
+  document.body.appendChild(host);
+  try { await S.dl.save({ filename: `RANKARA_${fileNo(p, ck)}_tum_surec_ozeti_${todayISO()}.docx`, data: await docxBlob(host) }); toast('Tüm süreç özeti kaydedildi'); } catch (e) { toast(e && e.code === 'declined' ? 'Kaydetme iptal edildi' : 'Özet oluşturulamadı'); } finally { host.remove(); }
+}
+
 function curRec() { const p = S.pts.get(S.cur); return S.view === 'report' ? recsOf(p, S.clinic).find((r) => r.id === S.rv) : S.wiz && S.wiz.rec; }
 async function saveSummaryDOCX() {
   if (!S.dl) { toast('Bu görünümde dosya kaydı kullanılamıyor'); return; }
@@ -2006,13 +2054,21 @@ function ozetSporIlk(p, ck, rec) {
   const low = (t) => ozLow(String(t).replace(/\s*\(([^()]*)\)/g, ', $1').replace(/ · /g, ', ')); const J = (a) => ozJoin(a.filter(Boolean)); const C = (k) => { const fl = formOf(ck, rec.f).steps.flatMap((s) => s.f).find((x) => x.k === k); const r = fl && fl.fn ? fl.fn(ctx) : null; return r; };
   const on = (seg) => !sk[seg];
   // kimlik ve spor
-  const age = ageOf(p); const sp = [d.spor, ...L('spordiger')].filter(Boolean).map(low);
-  let s = `${fileNo(p, ck)} dosya numaralı ${age != null ? age + ' yaşında ' : ''}${p.sex === 'K' ? 'kadın' : 'erkek'}${has('duzey') ? ', ' + ({ 'Sporcu değil': 'düzenli spor yapan', 'Rekreasyonel': 'rekreasyonel düzeyde', 'Amatör yarışmacı': 'amatör yarışmacı', 'Profesyonel / milli': 'profesyonel/milli' })[d.duzey] : ''}${has('tur') ? ' ' + low(d.tur) + ' sporcusu' : ' sporcu'}${sp.length ? ' (' + J(sp) + ')' : ''}, ${fmtDate(d.tarih) || ''} tarihinde ilk değerlendirme için görüldü`;
-  s += p.rankara === 'Evet' ? ' ve RANKARA çalışmasına dahildir.' : '.'; S2.push(s);
-  const a = []; if (isNum(d.yil)) a.push(`${d.yil} yıldır spor yapıyor`); if (has('lisans')) a.push(d.lisans === 'Lisans yok' ? 'lisansı yok' : `${d.lisans} lisanslı`);
+  const age = p.by && d.tarih ? +String(d.tarih).slice(0, 4) - p.by : ageOf(p); const sp = [d.spor, ...L('spordiger')].filter(Boolean).map(low);
+  const iz = rec.f === 'izlem';
+  if (iz) { S2.push(`${fmtDate(d.tarih)} tarihli ${({ 'Kontrol': 'kontrol', 'Sonuç kontrol': 'sonuç kontrolü', 'Spora dönüş': 'spora dönüş' })[d.vtur] || 'kontrol'} vizitinde değerlendirildi.`);
+    const sy = d.sym || {}; const SYM = { senkop: 'eforla bayılma ya da presenkop', gogus: 'eforla göğüs ağrısı', carp: 'çarpıntı', nefes: 'alışılmadık nefes darlığı ya da performans düşüşü' }; const yes = Object.keys(SYM).filter((k) => sy[k] === true).map((k) => SYM[k]);
+    const v = []; if (Object.keys(sy).length) v.push(yes.length ? `son vizitten bu yana ${J(yes)} tarifledi` : 'son vizitten bu yana eforla ilişkili yakınma tarif etmedi'); if (sy.ara === true) v.push('hastalık ya da sakatlık nedeniyle antrenmana ara verdi');
+    const wt = typeof wellTotal === 'function' ? wellTotal(d) : null; if (wt != null) v.push(`iyilik hali toplamı ${wt} (5 madde, 1–7; düşük değer iyi)`); if (has('uykus')) v.push(`gece ortalama ${d.uykus} uyuyor`);
+    if (v.length) S2.push(ozCap(v.join('; ')) + '.');
+    const k2 = []; if (has('caf')) k2.push(`günde ${d.caf} fincan kahve/çay içiyor`); if (d.enerji && d.enerji !== 'Hiç') k2.push(`enerji içeceği ${low(d.enerji)}`); const tk = (d.takviye || []).filter((x) => x !== 'Kullanmıyor'); if (tk.length) k2.push(`takviye olarak ${J(tk.map(low))} kullanıyor`); if (d.alkol && d.alkol !== 'Hiç') k2.push(`alkol ${low(d.alkol)}`); if (d.ped === 'Evet') k2.push('performans artırıcı madde kullandığını bildirdi');
+    if (k2.length) S2.push(ozCap(k2.join('; ')) + '.'); }
+  if (!iz) { let s = `${fileNo(p, ck)} dosya numaralı ${age != null ? age + ' yaşında ' : ''}${p.sex === 'K' ? 'kadın' : 'erkek'}${has('duzey') ? ', ' + ({ 'Sporcu değil': 'düzenli spor yapan', 'Rekreasyonel': 'rekreasyonel düzeyde', 'Amatör yarışmacı': 'amatör yarışmacı', 'Profesyonel / milli': 'profesyonel/milli' })[d.duzey] : ''}${has('tur') ? ' ' + low(d.tur) + ' sporcusu' : ' sporcu'}${sp.length ? ' (' + J(sp) + ')' : ''}, ${fmtDate(d.tarih) || ''} tarihinde ilk değerlendirme için görüldü`;
+  s += p.rankara === 'Evet' ? ' ve RANKARA çalışmasına dahildir.' : '.'; S2.push(s); }
+  if (!iz) { const a = []; if (isNum(d.yil)) a.push(`${d.yil} yıldır spor yapıyor`); if (has('lisans')) a.push(d.lisans === 'Lisans yok' ? 'lisansı yok' : `${d.lisans} lisanslı`);
   if (d.yaris && d.yaris !== 'Yok') a.push(`${low(d.yaris)} yarışlara katılıyor${has('sonyaris') ? ` (son yarış: ${[d.sonyaris, has('sonyariskm') ? d.sonyariskm + ' km' : '', d.sonyarissure].filter(Boolean).join(', ')})` : ''}`); else if (d.yaris === 'Yok') a.push('yarışlara katılmıyor');
   if (d.ped === 'Evet') a.push('performans artırıcı madde kullandığını bildirdi');
-  if (a.length) S2.push(ozCap(J(a)) + '.');
+  if (a.length) S2.push(ozCap(J(a)) + '.'); }
   // antrenman yükü
   const y = []; if (has('gun')) y.push(`haftada ${d.gun} gün${has('sure') ? ', ortalama ' + d.sure + ' dakika' : ''}${has('rpe') ? ' ve ' + d.rpe + '/10 zorlukta' : ''} antrenman yapıyor${loadOf(d) != null ? ' (haftalık yük ' + loadOf(d) + ' AU)' : ''}`);
   const w = []; if (isNum(d.kosukm) || isNum(d.kosudk)) w.push('koşu ' + [N('kosukm', 'km'), N('kosudk', 'dk')].filter(Boolean).join('/'));
@@ -2029,12 +2085,12 @@ function ozetSporIlk(p, ck, rec) {
   const ek2 = [...L('ek2').filter((x) => x !== 'Diğer').map(low), has('ek2dig') ? d.ek2dig : ''].filter(Boolean); if (ek2.length) b.push(`ön değerlendirmede ${J(ek2)} saptandı`);
   if (b.length) S2.push(ozCap(b.join('; ')) + '.');
   const o = []; const OZM = { 'Geçirilmiş viral enfeksiyon (son 3 ay)': 'son 3 ayda geçirilmiş viral enfeksiyon', 'Aritmi (AF, SVT, VT)': 'aritmi' }; const oz = [...L('oz').filter((x) => x !== 'Diğer').map((x) => OZM[x] || low(x)), has('ozdig') ? d.ozdig : ''].filter(Boolean); if (has('oz')) o.push(oz.length ? `özgeçmişinde ${J(oz)} var` : 'özgeçmişi özellik göstermiyor');
-  if (d.nikotin) { const pk = isNum(d.sigyil) && isNum(d.sigpak) ? trn(Math.round(d.sigyil * d.sigpak * 10) / 10) + ' paket-yıl' : ''; o.push(d.nikotin === 'Hiç' ? 'sigara içmemiş' : d.nikotin === 'Bırakmış' ? `${isNum(d.birakyil) ? d.birakyil + ' yılında ' : ''}sigarayı bırakmış${pk ? ' (' + pk + ')' : ''}` : d.nikotin === 'Sigara' ? `sigara içiyor${pk ? ' (' + pk + ')' : ''}` : low(d.nikotin) + ' kullanıyor'); }
+  if (d.nikotin && !(iz && d.nikotin === 'Hiç')) { const pk = isNum(d.sigyil) && isNum(d.sigpak) ? trn(Math.round(d.sigyil * d.sigpak * 10) / 10) + ' paket-yıl' : ''; o.push(d.nikotin === 'Hiç' ? 'sigara içmemiş' : d.nikotin === 'Bırakmış' ? `${isNum(d.birakyil) ? d.birakyil + ' yılında ' : ''}sigarayı bırakmış${pk ? ' (' + pk + ')' : ''}` : d.nikotin === 'Sigara' ? `sigara içiyor${pk ? ' (' + pk + ')' : ''}` : low(d.nikotin) + ' kullanıyor'); }
   if (has('aile')) o.push(L('aile').length ? `aile öyküsünde ${J(L('aile').map(low))} var` : 'ailede erken ani ölüm ya da kalıtsal kalp hastalığı öyküsü yok');
   if (o.length) S2.push(ozCap(o.join('; ')) + '.');
   // muayene
   const m = []; if (isNum(d.ta_s) && isNum(d.ta_d)) m.push(`TA ${d.ta_s}/${d.ta_d} mmHg${isNum(d.ta_sol) ? ' (sol kol sistolik ' + d.ta_sol + ')' : ''}`); if (isNum(d.nabiz)) m.push('nabız ' + d.nabiz + '/dk');
-  const bmi = bsaOf ? (isNum(d.boy) && isNum(d.kilo) ? Math.round(d.kilo / ((d.boy / 100) ** 2) * 10) / 10 : null) : null; if (bmi) m.push('VKİ ' + trn(bmi) + ' kg/m²'); if (isNum(d.yag)) m.push('yağ oranı %' + trn(d.yag));
+  const bmi = bsaOf ? (isNum(d.boy) && isNum(d.kilo) ? Math.round(d.kilo / ((d.boy / 100) ** 2) * 10) / 10 : null) : null; if (bmi) m.push('VKİ ' + trn(bmi) + ' kg/m²'); else if (isNum(d.kilo)) m.push('kilo ' + trn(d.kilo) + ' kg'); if (isNum(d.yag)) m.push('yağ oranı %' + trn(d.yag));
   const fm = [...L('fm').filter((x) => x !== 'Diğer').map(low), has('fmdig') ? d.fmdig : ''].filter(Boolean);
   if (m.length || has('fm')) S2.push(`Muayenede ${m.length ? m.join(', ') + ' olarak ölçüldü' : ''}${has('fm') ? (m.length ? '; ' : '') + (fm.length ? J(fm) + ' saptandı' : 'fizik muayenede patolojik bulgu saptanmadı') : ''}.`);
   // EKG
@@ -2066,7 +2122,7 @@ function ozetSporIlk(p, ck, rec) {
   if (on('tah') && isNum(d.a24s)) { const r = C('abpm'); S2.push(`Ayaktan kan basıncı izleminde 24 saat ortalaması ${d.a24s}/${d.a24d ?? '?'}${isNum(d.ags) ? ', gündüz ' + d.ags + '/' + (d.agd ?? '?') : ''}${isNum(d.ans) ? ', gece ' + d.ans + '/' + (d.and ?? '?') : ''} mmHg olarak ölçüldü${r ? '; ayaktan kan basıncı ' + low(r.v).replace(/^ayaktan kan basıncı /, '') + ' bulundu' : ''}.`); }
   // MR, BT
   if (on('mr') && (isNum(d.kmref) || has('lge') || has('mson'))) { const e = [F('mlvedvi', 'mL/m²', 'LVEDV indeksi'), F('kmref', '%', 'LVEF'), F('mrvedvi', 'mL/m²', 'RVEDV indeksi'), F('rvef', '%', 'RVEF'), F('mlvmi', 'g/m²', 'LV kitle indeksi'), F('mwtmax', 'mm', 'maksimal duvar kalınlığı'), F('t1', 'ms', 'native T1'), F('ecv', '%', 'ECV'), F('t2', 'ms', 'T2')]; const ll = C('llc');
-    S2.push(`Kardiyak MR'da ${e.filter(Boolean).join(', ')} olarak ölçüldü${d.lge === 'Var' ? '; geç gadolinyum tutulumu' + (L('lgep').length ? ' (' + J(L('lgep').map(low)) + ')' : '') + ' saptandı' : d.lge === 'Yok' ? '; geç gadolinyum tutulumu saptanmadı' : ''}${ll ? '; Lake Louise 2018 ölçütlerine göre ' + low(trn(ll.v)) : ''}${d.perik && d.perik !== 'Normal' ? '; perikardiyal ' + low(d.perik) + ' saptandı' : ''}${has('mson') ? '; bulgular ' + ({ 'Sporcu kalbiyle uyumlu': 'sporcu kalbiyle uyumlu bulundu', 'Gri bölge': 'gri bölgede değerlendirildi', 'Patolojik': 'patolojik olarak değerlendirildi' })[d.mson] : ''}${has('skmrnot') ? ' (' + d.skmrnot + ')' : ''}.`); }
+    S2.push(`Kardiyak MR'da ${e.filter(Boolean).join(', ')} olarak ölçüldü${d.lge === 'Var' ? '; geç gadolinyum tutulumu' + (L('lgep').length ? ' (' + J(L('lgep').map(low)) + ')' : '') + ' saptandı' : d.lge === 'Yok' ? '; geç gadolinyum tutulumu saptanmadı' : ''}${ll ? '; Lake Louise 2018 ölçütlerine göre ' + ({ 'Ölçüt yok': 'ölçüt karşılanmadı', 'Tek ölçüt karşılanıyor': 'tek ölçüt karşılandı', 'Miyokard inflamasyonuyla uyumlu': 'bulgular miyokard inflamasyonuyla uyumlu bulundu' })[ll.v] || low(trn(ll.v)) : ''}${d.perik && d.perik !== 'Normal' ? '; perikardiyal ' + low(d.perik) + ' saptandı' : ''}${has('mson') ? '; bulgular ' + ({ 'Sporcu kalbiyle uyumlu': 'sporcu kalbiyle uyumlu bulundu', 'Gri bölge': 'gri bölgede değerlendirildi', 'Patolojik': 'patolojik olarak değerlendirildi' })[d.mson] : ''}${has('skmrnot') ? ' (' + d.skmrnot + ')' : ''}.`); }
   if (on('bt') && (isNum(d.cac) || has('cadrads'))) S2.push(`Koroner BT'de ${[isNum(d.cac) ? 'koroner kalsiyum skoru ' + d.cac + (isNum(d.cacp) ? ' (yaş ve cinsiyete göre ' + d.cacp + '. persentil)' : '') + ' olarak ölçüldü' : null, d.cta === 'Yapıldı' && has('cadrads') ? 'BT anjiyografi CAD-RADS ' + d.cadrads + ' olarak değerlendirildi' : null, L('hrp').length ? 'yüksek riskli plak özelliği olarak ' + J(L('hrp').map(low)) + ' saptandı' : null, L('anom').length ? 'koroner anomali olarak ' + J(L('anom').map(low)) + ' saptandı' : (d.cta === 'Yapıldı' ? 'koroner anomali saptanmadı' : null)].filter(Boolean).join('; ')}${has('kbtnot') ? ' (' + d.kbtnot + ')' : ''}.`);
   // Laboratuvar
   if (on('lab')) { const labs = [['kreat', 'kreatinin', 'mg/dL'], ['k', 'potasyum', 'mmol/L'], ['na', 'sodyum', 'mmol/L'], ['hb', 'hemoglobin', 'g/dL'], ['hct', 'hematokrit', '%'], ['ferritin', 'ferritin', 'ng/mL'], ['tsat', 'transferrin satürasyonu', '%'], ['tk', 'total kolesterol', 'mg/dL'], ['ldl', 'LDL-K', 'mg/dL'], ['hdl', 'HDL-K', 'mg/dL'], ['tg', 'trigliserid', 'mg/dL'], ['hba1c', 'HbA1c', '%'], ['ntpro', 'NT-proBNP', 'ng/L'], ['trop', 'hs-troponin', 'ng/L'], ['ck', 'CK', 'U/L'], ['tsh', 'TSH', 'mIU/L'], ['alt', 'ALT', 'U/L'], ['vitd', '25-OH D vitamini', 'ng/mL'], ['b12', 'B12', 'pg/mL'], ['folat', 'folat', 'ng/mL'], ['mg', 'magnezyum', 'mg/dL']].filter(([k]) => isNum(d[k]));
@@ -2104,7 +2160,7 @@ function vForms() {
 /* ---------- AYARLAR ---------- */
 function vSettings() {
   return `${topbar()}<div class="stack">
-    <div class="card stack"><div class="small muted">RANKARA sürüm 1.9 · 28.11.2026</div><h2>Veri güvenliği</h2><p>Kayıtlar ve fotoğraflar bu iPad’de, PIN’inizden türetilen anahtarla <b>AES-256</b> ile şifrelenir (PBKDF2, ${ITER.toLocaleString('tr-TR')} tur). Kayıtlar yalnızca bu iPad’de saklanır; uygulama internete ya da başka bir sisteme veri göndermez. Dışarıdan alabildiği tek şey hastanın ön anket dosyasıdır; bu dosya yalnızca bu iPad’deki özel anahtarla açılır, hasta eşleştirmesi yapılır ve siz önizleyip onaylamadan kaydedilmez. Cihaz dışına çıkabilen tek dosya, sizin aldığınız şifreli yedektir.</p>
+    <div class="card stack"><div class="small muted">RANKARA sürüm 2.0 · 28.11.2026</div><h2>Veri güvenliği</h2><p>Kayıtlar ve fotoğraflar bu iPad’de, PIN’inizden türetilen anahtarla <b>AES-256</b> ile şifrelenir (PBKDF2, ${ITER.toLocaleString('tr-TR')} tur). Kayıtlar yalnızca bu iPad’de saklanır; uygulama internete ya da başka bir sisteme veri göndermez. Dışarıdan alabildiği tek şey hastanın ön anket dosyasıdır; bu dosya yalnızca bu iPad’deki özel anahtarla açılır, hasta eşleştirmesi yapılır ve siz önizleyip onaylamadan kaydedilmez. Cihaz dışına çıkabilen tek dosya, sizin aldığınız şifreli yedektir.</p>
       <p>Ad soyad ve T.C. kimlik numarası tutulmaz. Fotoğraf yalnızca açık rıza işaretlenmiş hastada çekilir. 5 dakika işlem yapılmazsa uygulama kilitlenir.</p><p class="muted small">PIN unutulursa kayıtlar açılamaz. Düzenli yedek alın.</p></div>
     <div class="card stack"><h3>Tüm kayıtları sil</h3><p class="muted small">Deneme kayıtlarını temizlemek için. Hasta kayıtları, formlar ve fotoğraflar silinir; PIN ve ön anket bağlantısı kalır.</p><div class="row"><button class="btn danger" data-a="wipe">Tüm kayıtları sil</button></div></div>
     <div class="card stack"><h3>Şifreli yedek</h3><p class="muted small">Yedek dosyası da şifrelidir; yalnızca aynı PIN ile açılır. Kaydederken iCloud Drive’ı değil, <b>iPad’imde</b> klasörünü ya da USB belleği seçin.</p><div class="row"><button class="btn pri" data-a="backup" ${S.dl ? '' : 'disabled'}>Yedek al</button><button class="btn" data-a="restore">Yedekten geri yükle</button></div></div>
@@ -2211,6 +2267,7 @@ document.addEventListener('click', async (e) => {
     case 'backup': await doBackup(); break;
     case 'docx': await saveDOCX(); break;
     case 'ozetdocx': await saveSummaryDOCX(); break;
+    case 'kursozet': await saveCourseDOCX(); break;
     case 'wipe': confirmBox('Bu iPad’deki TÜM hasta kayıtları, formlar ve fotoğraflar kalıcı olarak silinsin mi? Dosya numaraları 0001’den yeniden başlar. PIN ve ön anket bağlantısı değişmez. Bu işlem geri alınamaz; saklamak istediğiniz kayıt varsa önce yedek alın.', 'Hepsini sil', async () => { try { const snap = await S.db.collection(`data/users/${S.uid}`).get(); for (const d of snap.docs) { if (d.id.startsWith('p_') || d.id.startsWith('f_') || d.id === 'seq' || d.id === 'stats') await S.db.doc(P_(d.id)).delete(); } await loadAll(); toast('Tüm kayıtlar silindi'); go('home'); } catch (e) { toast('Silme tamamlanamadı'); } }); break;
     case 'csv': await doCSV(); break;
     case 'q': S.q = (S.q + v).slice(0, 4); render(); break;

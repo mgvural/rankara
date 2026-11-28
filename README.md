@@ -36,3 +36,8 @@
 ## Sürüm 1.9 (28.11.2026)
 
 - Toplu test (her poliklinik ve modülde 10 kurgusal hasta) sonrası düzeltmeler: İleri EKO'da TA ve nabız ortak anahtarlarla tutulur (eski kayıtlar açılışta taşınır); veri tablosunda modülde olmayan ortak sütunlar gösterilmez; hekime özette küçük yazım düzeltmeleri (HbA1c, "/dk", tekrar eden hesap adları, eksik veri uyarıları).
+
+## Sürüm 2.0 (28.11.2026)
+
+- Hasta ekranında **Tüm süreç özeti (Word)**: ilk değerlendirme ve tüm izlem vizitleri tarih sırasıyla hekim diliyle, her vizitin önerileri, son vizitin ÖNERİLER listesi ve önemli parametrelerin zaman içindeki değişimini gösteren grafikler (referans aralığı ve referans dışı noktalar işaretli).
+- Spor kardiyolojisi izlem vizitleri de hekim diliyle özetlenir; özetlerde yaş vizit tarihine göre hesaplanır.
