@@ -544,7 +544,7 @@ const C_DCMRISK = (ctx) => { const f = fenOf(ctx); if (!['DKMP', 'NDLVC (dilate 
 
 const COMMON_VITAL = [num('ta_s', 'Sistolik TA', { unit: 'mmHg', min: 60, max: 260, start: 120, steps: [1, 10] }), num('ta_d', 'Diyastolik TA', { unit: 'mmHg', min: 30, max: 160, start: 80, steps: [1, 10] }), num('nabiz', 'Nabız', { unit: '/dk', min: 25, max: 220, start: 70, steps: [1, 10] })];
 const ANTROPO = [num('boy', 'Boy', { unit: 'cm', min: 120, max: 220, start: 170, steps: [1, 5] }), num('kilo', 'Kilo', { unit: 'kg', min: 30, max: 220, start: 70, steps: [0.5, 5], dec: 1 }), calc('bmi', 'Vücut kitle indeksi', C_BMI)];
-const KARAR_ORTAK = [single('kontrol', 'Sonraki kontrol', CTRL), text('not', 'Not (isteğe bağlı)')];
+const KARAR_ORTAK = [single('kontrol', 'Sonraki kontrol', CTRL), text('oneriler', 'Öneriler (her satıra bir öneri; özetin sonunda büyük harfle numaralı yazılır)', { opt: true, ph: 'ör.\nCoversyl 5 1x1\nLipid kontrolü\nKPET sonucuna göre yeniden değerlendirilmesi' }), text('not', 'Not (isteğe bağlı)')];
 
 
 
@@ -760,7 +760,7 @@ const ILEKO_FORM = { k: 'ileko', ad: 'İleri ekokardiyografi', tur: 'Tetkik rapo
   { ad: 'Sonuç ve öneri', f: [single('iegenel', 'Genel değerlendirme', ['Normal', 'Fizyolojik uyum (sporcu kalbi)', 'Gri bölge', 'Anormal']), text('iesonuc', 'Sonuç / yorum', { ph: 'Sonuç ve yorum' }),
     multi('ieoneri', 'Öneri', ['Kontrol tetkiki', 'KMR', 'Stres eko', 'Sağ kalp kateterizasyonu', 'Konsültasyon']),
     text('iekontrol', 'Kontrol tetkiki ne zaman', { line: true, w: 260, ph: 'ör. 3 ay sonra', when: (d) => (d.ieoneri || []).includes('Kontrol tetkiki') }),
-    text('iekons', 'Konsültasyon: hangi bölüm', { line: true, ph: 'Bölümü yazın', when: (d) => (d.ieoneri || []).includes('Konsültasyon') })] },
+    text('iekons', 'Konsültasyon: hangi bölüm', { line: true, ph: 'Bölümü yazın', when: (d) => (d.ieoneri || []).includes('Konsültasyon') }), text('oneriler', 'Diğer öneriler (her satıra bir öneri; özetin sonunda büyük harfle numaralı yazılır)', { opt: true, ph: 'ör.\nCoversyl 5 1x1\nLipid kontrolü' })] },
 ], sum: (d) => [d.iegenel, isNum(d.ielvef2) ? 'LVEF %' + d.ielvef2 : '', isNum(d.iegls) ? 'GLS ' + trn(d.iegls) + '%' : '', ieSpap(d) != null ? 'sPAP ' + ieSpap(d) + ' mmHg' : ''].filter(Boolean).join(' · ') };
 
 const CLINICS = [
@@ -1570,7 +1570,7 @@ function render() {
 }
 function topbar(right = '', sub = 'Poliklinik anamnez ve izlem') {
   const noBack = ['home', 'lock', 'setup', 'loading', 'nodb', 'wiz'].includes(S.view);
-  return `<div class="topbar"><div class="brand">${noBack ? '' : '<button class="btn backbtn" data-a="back" aria-label="Geri">‹ Geri</button><button class="btn backbtn homebtn" data-a="home" aria-label="Ana ekran"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h5v-6h4v6h5V10"/></svg></button>'}<div class="logo" aria-hidden="true">${LOGO}</div><div><h1 class="wordmark">RAN<span>KARA</span><b class="verbadge">v1.7</b></h1><small>${esc(sub)}</small></div></div><div class="row">${right}</div></div>`;
+  return `<div class="topbar"><div class="brand">${noBack ? '' : '<button class="btn backbtn" data-a="back" aria-label="Geri">‹ Geri</button><button class="btn backbtn homebtn" data-a="home" aria-label="Ana ekran"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h5v-6h4v6h5V10"/></svg></button>'}<div class="logo" aria-hidden="true">${LOGO}</div><div><h1 class="wordmark">RAN<span>KARA</span><b class="verbadge">v1.8</b></h1><small>${esc(sub)}</small></div></div><div class="row">${right}</div></div>`;
 }
 const LOGO = `<svg viewBox="0 0 64 64"><rect width="64" height="64" rx="15" fill="#E8711A"/><path d="M32 51 L14.5 33.5 C8.5 27.5 9.5 17.5 17 14.6 C22.6 12.5 28.4 14.6 32 19.6 C35.6 14.6 41.4 12.5 47 14.6 C54.5 17.5 55.5 27.5 49.5 33.5 Z" fill="none" stroke="#FFFFFF" stroke-width="4" stroke-linejoin="round"/><path d="M5 34 H20.5 L24.5 27 L29.5 42.5 L35 18.5 L39.5 34 H59" fill="none" stroke="#E8711A" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 34 H20.5 L24.5 27 L29.5 42.5 L35 18.5 L39.5 34 H59" fill="none" stroke="#13263A" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 const ICONSVG = (c) => `<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${c.icon}</svg>`;
@@ -1851,7 +1851,7 @@ function reportHTML(p, ck, rec) {
       const v = fmtVal(fl, rec.d[fl.k]); if (v == null) continue;
       const rs = fl.t === 'num' ? refState(fl.k, rec.d[fl.k], ctx) : null;
       const flag = (fl.t === 'yn' && fl.alarm && Object.values(rec.d[fl.k] || {}).some((x) => x === true)) || (rs && rs.s);
-      rows.push(`<tr><th>${esc(fl.label)}</th><td class="${flag ? 'flag' : ''}${fl.tone && v !== 'Yok' ? ' tone-' + fl.tone : ''}">${esc(v)}${rs && rs.s ? (rs.s > 0 ? ' ↑' : ' ↓') + ' (ref ' + refTxt(rs.r) + ')' : ''}</td></tr>`);
+      rows.push(`<tr><th>${esc(fl.label)}</th><td class="${flag ? 'flag' : ''}${fl.tone && v !== 'Yok' ? ' tone-' + fl.tone : ''}">${esc(v).replace(/\n/g, '<br>')}${rs && rs.s ? (rs.s > 0 ? ' ↑' : ' ↓') + ' (ref ' + refTxt(rs.r) + ')' : ''}</td></tr>`);
     }
     const all = rows.join('') + scaleRows; return all ? `<h4>${esc(st.ad)}</h4><table>${all}</table>` : '';
   }).join('');
@@ -1866,7 +1866,7 @@ function reportHTML(p, ck, rec) {
 function vReport() {
   const p = S.pts.get(S.cur); const c = CL[S.clinic]; const rec = recsOf(p, c.k).find((r) => r.id === S.rv); if (!rec) return vPatient(); const f = formOf(c.k, rec.f);
   return `${topbar('', c.ad)}<div class="card row between"><h2>${fmtDate(rec.d.tarih)} · ${f.ad}</h2><div class="row"><button class="btn" data-a="editrec">Düzenle</button><button class="btn" data-a="docx" ${S.dl ? '' : 'hidden'}>Word</button><button class="btn pri" data-a="pdf" ${S.dl ? '' : 'hidden'}>PDF</button><button class="btn" data-a="ozetdocx" ${S.dl ? '' : 'hidden'}>Özet (Word)</button><button class="btn danger" data-a="delrec">Sil</button></div></div>
-    <div class="row" style="margin:10px 0"><button class="chip sm" data-a="phrep" aria-pressed="${S.photoInReport}">Raporda fotoğraf</button>${p.kimRiza === 'Alındı' && p.kim && Object.keys(p.kim).length ? `<button class="chip sm" data-a="idrep" aria-pressed="${S.idInReport}">Raporda kimlik bilgileri</button>` : ''}</div><details class="card" style="margin:0 0 12px"><summary style="cursor:pointer;font-weight:700">Hekime özet (tek paragraf)</summary><p style="margin:10px 0 0;line-height:1.6">${esc(summaryText(p, c.k, rec))}</p></details><div class="sheetwrap">${reportHTML(p, c.k, rec)}</div>`;
+    <div class="row" style="margin:10px 0"><button class="chip sm" data-a="phrep" aria-pressed="${S.photoInReport}">Raporda fotoğraf</button>${p.kimRiza === 'Alındı' && p.kim && Object.keys(p.kim).length ? `<button class="chip sm" data-a="idrep" aria-pressed="${S.idInReport}">Raporda kimlik bilgileri</button>` : ''}</div><details class="card" style="margin:0 0 12px"><summary style="cursor:pointer;font-weight:700">Hekime özet (tek paragraf)</summary><p style="margin:10px 0 0;line-height:1.6">${esc(summaryText(p, c.k, rec))}</p>${(() => { const o = ozOneriler(p, c.k, rec); return o.length ? `<p style="margin:10px 0 4px"><b>ÖNERİLER</b></p>${o.map((x, i) => `<div>${i + 1}- ${esc(x)}</div>`).join('')}` : ''; })()}</details><div class="sheetwrap">${reportHTML(p, c.k, rec)}</div>`;
 }
 async function makePDF() {
   if (!S.dl) { toast('Bu görünümde dosya kaydı kullanılamıyor'); return; }
@@ -1962,7 +1962,7 @@ function summaryText(p, ck, rec) {
     const fields = st.f.flatMap((x) => (x.t === 'view' ? (vis(x, ctx) ? x.f : []) : [x])).filter((x) => x.t !== 'head' && x.t !== 'date' && x.t !== 'labocr' && vis(x, ctx));
     const used = new Set(); const parts = [];
     for (const [a, b, l] of OZ_PAIRS) if (fields.some((x) => x.k === a) && isNum(d[a]) && isNum(d[b])) { parts.push(`${l} ${d[a]}/${d[b]} mmHg`); used.add(a); used.add(b); }
-    for (const fl of fields) { if (used.has(fl.k)) continue; const ph = ozPhrase(fl, d, ctx); if (ph) parts.push(ph); }
+    for (const fl of fields) { if (used.has(fl.k) || OZ_SKIP.has(fl.k)) continue; const ph = ozPhrase(fl, d, ctx); if (ph) parts.push(ph); }
     if (st.f.some((x) => x.t === 'scales') && d.sc) { const sc = SCALES.filter((s) => d.sc[s.k] != null).map((s) => `${s.ad} ${d.sc[s.k]}${s.unit ? ' ' + s.unit : ' puan'}`); if (sc.length) parts.push('ölçekler: ' + sc.join(', ')); }
     if (!parts.length) continue;
     const ad = st.ad.replace(/ · /g, ', ');
@@ -1970,12 +1970,27 @@ function summaryText(p, ck, rec) {
   }
   return out.join(' ').replace(/\s+/g, ' ').replace(/ ,/g, ',');
 }
+/* Özetin sonundaki ÖNERİLER listesi: hekimin yazdığı satırlar + istenen tetkik, yönlendirme ve kontrol */
+const ozUp = (t) => String(t).toLocaleUpperCase('tr-TR');
+const OZ_ISTEK = { 'Stres EKO': 'STRES EKOKARDİYOGRAFİ', 'Holter': 'RİTİM HOLTER', 'Koroner BT anjiyografi': 'KORONER BT ANJİYOGRAFİ', 'KMR (Ankara EAH)': 'KARDİYAK MRG', 'Genetik danışmanlık': 'GENETİK DANIŞMANLIK', 'Ambulatuvar kan basıncı': 'AYAKTAN KAN BASINCI HOLTERİ' };
+const OZ_IEONERI = { 'KMR': 'KARDİYAK MRG', 'Stres eko': 'STRES EKOKARDİYOGRAFİ', 'Sağ kalp kateterizasyonu': 'SAĞ KALP KATETERİZASYONU' };
+function ozOneriler(p, ck, rec) {
+  const d = rec.d; const out = [];
+  String(d.oneriler || '').split(/\n+/).map((x) => x.replace(/^\s*(\d+\s*[-.)]|[-•*])\s*/, '').trim()).filter(Boolean).forEach((x) => out.push(ozUp(x)));
+  (d.istek || []).forEach((x) => out.push(OZ_ISTEK[x] || ozUp(x)));
+  (d.ieoneri || []).forEach((x) => { if (x === 'Kontrol tetkiki') out.push('KONTROL EKOKARDİYOGRAFİ' + (d.iekontrol ? ': ' + ozUp(d.iekontrol) : '')); else if (x === 'Konsültasyon') out.push('KONSÜLTASYON' + (d.iekons ? ': ' + ozUp(d.iekons) : '')); else out.push(OZ_IEONERI[x] || ozUp(x)); });
+  (d.refs || []).forEach((x) => out.push('YÖNLENDİRME: ' + ozUp(x)));
+  if (d.kontrol && d.kontrol !== 'Gerekmiyor') out.push(ozUp(d.kontrol) + ' SONRA KONTROL');
+  const seen = new Set(); return out.filter((x) => { const k = x.replace(/\s+/g, ' '); if (seen.has(k)) return false; seen.add(k); return true; });
+}
+const OZ_SKIP = new Set(['oneriler', 'istek', 'refs', 'kontrol', 'ieoneri', 'iekontrol', 'iekons']);
+
 function curRec() { const p = S.pts.get(S.cur); return S.view === 'report' ? recsOf(p, S.clinic).find((r) => r.id === S.rv) : S.wiz && S.wiz.rec; }
 async function saveSummaryDOCX() {
   if (!S.dl) { toast('Bu görünümde dosya kaydı kullanılamıyor'); return; }
   const p = S.pts.get(S.cur); const ck = S.clinic; const rec = curRec(); if (!p || !rec) return; const c = CL[ck];
   const host = document.createElement('div'); host.style.cssText = 'position:absolute;left:-9999px;top:0;width:700px';
-  host.innerHTML = `<div class="ph"><div><div><b>Atatürk Sanatoryum Eğitim ve Araştırma Hastanesi</b><br>${esc(c.grp === 'lab' ? GR[c.grp].ad + ' · ' + c.ad : c.ad + ' Polikliniği')} · Hekime özet<br>Dosya no: <b>${esc(fileNo(p, ck))}</b> · ${p.sex === 'K' ? 'Kadın' : 'Erkek'}, ${ageOf(p) ?? '?'} yaş · Tarih: ${fmtDate(rec.d.tarih)}</div></div></div><h4>Özet</h4><p>${esc(summaryText(p, ck, rec))}</p><div class="sig"><div>Hekim adı soyadı, imza</div><div>Tarih: ${fmtDate(rec.d.tarih)}</div></div><div class="foot">RANKARA kayıtlarından oluşturulmuştur. Ad ve kimlik numarası içermez; hasta dosya numarasıyla tanımlanır.</div>`;
+  host.innerHTML = `<div class="ph"><div><div><b>Atatürk Sanatoryum Eğitim ve Araştırma Hastanesi</b><br>${esc(c.grp === 'lab' ? GR[c.grp].ad + ' · ' + c.ad : c.ad + ' Polikliniği')} · Hekime özet<br>Dosya no: <b>${esc(fileNo(p, ck))}</b> · ${p.sex === 'K' ? 'Kadın' : 'Erkek'}, ${ageOf(p) ?? '?'} yaş · Tarih: ${fmtDate(rec.d.tarih)}</div></div></div><h4>Özet</h4><p>${esc(summaryText(p, ck, rec))}</p>${(() => { const o = ozOneriler(p, ck, rec); return o.length ? `<p><b>ÖNERİLER</b></p>${o.map((x, i) => `<p>${i + 1}- ${esc(x)}</p>`).join('')}` : ''; })()}<div class="sig"><div>Hekim adı soyadı, imza</div><div>Tarih: ${fmtDate(rec.d.tarih)}</div></div><div class="foot">RANKARA kayıtlarından oluşturulmuştur. Ad ve kimlik numarası içermez; hasta dosya numarasıyla tanımlanır.</div>`;
   document.body.appendChild(host);
   try { await S.dl.save({ filename: reportName('docx').replace(/\.docx$/, '_ozet.docx'), data: await docxBlob(host) }); toast('Özet kaydedildi'); } catch (e) { toast(e && e.code === 'declined' ? 'Kaydetme iptal edildi' : 'Özet oluşturulamadı'); } finally { host.remove(); }
 }
@@ -2066,8 +2081,8 @@ function ozetSporIlk(p, ck, rec) {
   const KR = { 'Kısıtlamasız uygun': 'spora katılım açısından kısıtlamasız uygun bulundu', 'Önerilerle kısıtlamasız uygun': 'spora katılım açısından önerilerle kısıtlamasız uygun bulundu', 'Belirli sporlar için uygun': 'yalnız belirli sporlar için uygun bulundu', 'Değerlendirme sürüyor (şimdilik uygun değil)': 'değerlendirme tamamlanana kadar spora katılımı uygun görülmedi', 'Hiçbir spor için uygun değil': 'hiçbir spor için uygun görülmedi' };
   if (has('karar')) t.push(KR[d.karar] || low(d.karar));
   const pl = []; if (on('egz') && has('gunp')) pl.push(`haftada ${d.gunp} gün`); if (on('egz') && has('bolge')) pl.push(`ağırlıklı ${d.bolge}`); if (on('egz') && isNum(d.ust)) pl.push(`üst sınır nabız ${d.ust}/dk`); if (on('egz') && d.kas && d.kas !== 'Şimdilik yok') pl.push(`${low(d.kas)} kas güçlendirme`); if (on('egz') && L('ozel').length) pl.push(J(L('ozel').map(low)));
-  if (pl.length) t.push(`${pl.join(', ')} önerildi`); if (L('istek').length) t.push(`${J(L('istek').map(low))} istendi`); if (L('refs').length) t.push(`${J(L('refs').map(low))} birimlerine yönlendirildi`);
-  if (has('rapor')) t.push(`rapor kontrol süresi ${d.rapor} olarak belirlendi`); if (has('kontrol')) t.push(d.kontrol === 'Gerekmiyor' ? 'kontrol gerekmiyor' : `sonraki kontrol ${d.kontrol} sonra planlandı`);
+  if (pl.length) t.push(`egzersiz programı olarak ${pl.join(', ')} önerildi`);
+  if (has('rapor')) t.push(`rapor kontrol süresi ${d.rapor} olarak belirlendi`);
   if (t.length) S2.push(ozCap(t.join('; ')) + '.'); if (has('not')) S2.push(String(d.not).trim().replace(/([^.])$/, '$1.'));
   return S2.join(' ').replace(/\s+/g, ' ').replace(/ ,/g, ',').replace(/\.\./g, '.');
 }
@@ -2088,7 +2103,7 @@ function vForms() {
 /* ---------- AYARLAR ---------- */
 function vSettings() {
   return `${topbar()}<div class="stack">
-    <div class="card stack"><div class="small muted">RANKARA sürüm 1.7 · 28.11.2026</div><h2>Veri güvenliği</h2><p>Kayıtlar ve fotoğraflar bu iPad’de, PIN’inizden türetilen anahtarla <b>AES-256</b> ile şifrelenir (PBKDF2, ${ITER.toLocaleString('tr-TR')} tur). Kayıtlar yalnızca bu iPad’de saklanır; uygulama internete ya da başka bir sisteme veri göndermez. Dışarıdan alabildiği tek şey hastanın ön anket dosyasıdır; bu dosya yalnızca bu iPad’deki özel anahtarla açılır, hasta eşleştirmesi yapılır ve siz önizleyip onaylamadan kaydedilmez. Cihaz dışına çıkabilen tek dosya, sizin aldığınız şifreli yedektir.</p>
+    <div class="card stack"><div class="small muted">RANKARA sürüm 1.8 · 28.11.2026</div><h2>Veri güvenliği</h2><p>Kayıtlar ve fotoğraflar bu iPad’de, PIN’inizden türetilen anahtarla <b>AES-256</b> ile şifrelenir (PBKDF2, ${ITER.toLocaleString('tr-TR')} tur). Kayıtlar yalnızca bu iPad’de saklanır; uygulama internete ya da başka bir sisteme veri göndermez. Dışarıdan alabildiği tek şey hastanın ön anket dosyasıdır; bu dosya yalnızca bu iPad’deki özel anahtarla açılır, hasta eşleştirmesi yapılır ve siz önizleyip onaylamadan kaydedilmez. Cihaz dışına çıkabilen tek dosya, sizin aldığınız şifreli yedektir.</p>
       <p>Ad soyad ve T.C. kimlik numarası tutulmaz. Fotoğraf yalnızca açık rıza işaretlenmiş hastada çekilir. 5 dakika işlem yapılmazsa uygulama kilitlenir.</p><p class="muted small">PIN unutulursa kayıtlar açılamaz. Düzenli yedek alın.</p></div>
     <div class="card stack"><h3>Tüm kayıtları sil</h3><p class="muted small">Deneme kayıtlarını temizlemek için. Hasta kayıtları, formlar ve fotoğraflar silinir; PIN ve ön anket bağlantısı kalır.</p><div class="row"><button class="btn danger" data-a="wipe">Tüm kayıtları sil</button></div></div>
     <div class="card stack"><h3>Şifreli yedek</h3><p class="muted small">Yedek dosyası da şifrelidir; yalnızca aynı PIN ile açılır. Kaydederken iCloud Drive’ı değil, <b>iPad’imde</b> klasörünü ya da USB belleği seçin.</p><div class="row"><button class="btn pri" data-a="backup" ${S.dl ? '' : 'disabled'}>Yedek al</button><button class="btn" data-a="restore">Yedekten geri yükle</button></div></div>

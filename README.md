@@ -28,3 +28,7 @@
 ## Sürüm 1.7 (28.11.2026)
 
 - Spor kardiyolojisi hekime özeti: EK-1/EK-2/EK-3 ifadeleri kaldırıldı; bulgular "saptandı / tespit edildi / ölçüldü" diliyle; kardiyak MR, koroner BT ve karar cümleleri yeniden yazıldı.
+
+## Sürüm 1.8 (28.11.2026)
+
+- Özetin sonunda **ÖNERİLER**: büyük harfle, numaralı, her öneri ayrı satırda. Kaynakları: son adımdaki yeni "Öneriler" kutusu (her satıra bir öneri; ilaç, tetkik, kontrol), işaretlenen istenen tetkikler, yönlendirmeler ve sonraki kontrol. Aynı öneri iki kez yazılmaz.
