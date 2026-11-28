@@ -24,3 +24,7 @@
 
 - Tüm polikliniklerde ve Görüntüleme Laboratuvarı modüllerinde raporun yanında **Özet (Word)**: kayıttaki tüm bölümler bir hekime yazılmış gibi tek paragrafta. Spor kardiyolojisi ilk değerlendirmesi için ayrıntılı anlatım; diğer formlarda bölüm bölüm özet. Rapor ekranında özetin önizlemesi var.
 - Yazım: "Nabzı saatle izleme".
+
+## Sürüm 1.7 (28.11.2026)
+
+- Spor kardiyolojisi hekime özeti: EK-1/EK-2/EK-3 ifadeleri kaldırıldı; bulgular "saptandı / tespit edildi / ölçüldü" diliyle; kardiyak MR, koroner BT ve karar cümleleri yeniden yazıldı.
